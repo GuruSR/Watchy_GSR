@@ -150,6 +150,7 @@ void WatchyGSR::setupDefaults(){
     Options.Lefty = false;
     Options.Swapped = false;
     Options.Turbo = 3;
+    Options.Orientated = true;
     Steps.Hour = 6;
     Steps.Minutes = 0;
 }
