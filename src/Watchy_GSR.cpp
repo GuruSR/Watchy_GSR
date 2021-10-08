@@ -143,6 +143,7 @@ WatchyGSR::WatchyGSR(){}  //constructor
 
 // Init Defaults after a reboot, setup all the variables here for defaults to avoid randomness.
 void WatchyGSR::setupDefaults(){
+    Options.LightMode = true;
     Options.Feedback = true;
     Options.Border = false;
     Options.Lefty = false;
