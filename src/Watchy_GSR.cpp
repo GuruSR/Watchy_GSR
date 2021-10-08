@@ -24,7 +24,7 @@ RTC_DATA_ATTR struct Stepping {
 RTC_DATA_ATTR struct Optional {
     bool TwentyFour;                  // If the face shows 24 hour or Am/Pm.
     bool LightMode;                    // Light/Dark mode.
-    bool Feedback;                    // Hapatic Feedback on buttons.
+    bool Feedback;                    // Haptic Feedback on buttons.
     bool Border;                      // True to set the border to black/white.
     bool Lefty;                       // Swaps the buttons to the other side.
     bool Swapped;                     // Menu and Back buttons swap ends (vertically).
@@ -34,7 +34,7 @@ RTC_DATA_ATTR struct Optional {
 
 RTC_DATA_ATTR int GuiMode;
 RTC_DATA_ATTR bool ScreenOn;              // Screen needs to be on.
-RTC_DATA_ATTR bool VibeMode;              // Vibe Motor is On=True/Off=False, used for the Hapatic and Alarms.
+RTC_DATA_ATTR bool VibeMode;              // Vibe Motor is On=True/Off=False, used for the Haptic and Alarms.
 RTC_DATA_ATTR String WatchyStatus;        // Used for the indicator in the bottom left, so when it changes, it asks for a screen refresh, if not, it doesn't.
 
 RTC_DATA_ATTR struct TimeData {
@@ -133,7 +133,7 @@ bool ActiveMode;   // Moved so it can be checked.
 bool OTAUpdate;    // Internet based OTA Update.
 bool OTAEnd;       // Means somewhere, it wants this to end, so end it.
 int OTATry;        // Tries to connect to WiFi.
-bool DoHapatic;    // Want it to happen after screen update.
+bool DoHaptic;    // Want it to happen after screen update.
 bool UpdateDisp;   // Display needs to be updated.
 unsigned long LastButton, OTAFail;
 
@@ -143,8 +143,6 @@ WatchyGSR::WatchyGSR(){}  //constructor
 
 // Init Defaults after a reboot, setup all the variables here for defaults to avoid randomness.
 void WatchyGSR::setupDefaults(){
-    Options.TwentyFour = false;
-    Options.LiteMode = true;
     Options.Feedback = true;
     Options.Border = false;
     Options.Lefty = false;
@@ -291,13 +289,13 @@ void WatchyGSR::init(){
                             Alarms_Playing[AlarmIndex]--;
                             if (Menu.SubItem > 0 && Menu.Item - MENU_ALARM1 == AlarmIndex){
                                 VibeTo(false);
-                                DoHapatic = false;
+                                DoHaptic = false;
                                 Alarms_Playing[AlarmIndex]=0;
                                 Alarms_Times[AlarmIndex]=0;
                             }else{
                                 Pulse = ((AlarmVBs[AlarmIndex] & Bits[Alarms_Playing[AlarmIndex] / 3]) != 0);
                                 VibeTo(Pulse);   // Turns Vibe on or off depending on bit state.
-                                DoHapatic = false;
+                                DoHaptic = false;
                             }
                             if (Alarms_Playing[AlarmIndex] == 0 && Alarms_Times[AlarmIndex] > 0){
                                 Alarms_Times[AlarmIndex]--;   // Decrease count, eventually this will all stop on it's own.
@@ -505,12 +503,12 @@ void WatchyGSR::init(){
 void WatchyGSR::showWatchFace(){
   display.epd2.setDarkBorder(Options.Border);
   drawWatchFace();
-  if (Options.Feedback && DoHapatic){
+  if (Options.Feedback && DoHaptic){
     VibeTo(true);
     delay(40);
     VibeTo(false);
   }
-  DoHapatic=false;
+  DoHaptic=false;
   UpdateDisp=false;
   ScreenRefresh();
 }
@@ -1094,72 +1092,72 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
             GuiMode = MENUON;
             Menu.LastItem="";
             Menu.LastHeader="";
-            DoHapatic = true;
+            DoHaptic = true;
             UpdateDisp = true;  // Quick Update.
             SetTurbo();
           }else if (GuiMode == MENUON){
               if (Menu.Item == MENU_OPTIONS && Menu.SubItem == 0){  // Options
                   Menu.Item = MENU_DISP;
                   Menu.Style = MENU_INOPTIONS;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == MENU_STEPS){ // Steps
                   if (Menu.SubItem == 4){
                       sensor.resetStepCounter();
                       Menu.SubItem = 0;
-                      DoHapatic = true;
+                      DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
                   }else if (Menu.SubItem < 4){
                       Menu.SubItem++;
-                      DoHapatic = true;
+                      DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
                   }
               }else if (Menu.Item == MENU_ALARMS){  // Alarms menu.
                   Menu.Style = MENU_INALARMS;
                   Menu.Item = MENU_ALARM1;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;
                   SetTurbo();
               }else if (Menu.Item >= MENU_ALARM1 && Menu.Item <= MENU_ALARM4){  // Alarms
                   if (Menu.SubItem < 4){
                       Menu.SubItem++;
                       if (Menu.SubItem == 4) Menu.SubItem += WatchTime.Local.Wday; // Jump ahead to the day.
-                      DoHapatic = true;
+                      DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
                   }else if (Menu.SubItem > 3 && Menu.SubItem < 11){
                       Alarms_Active[Menu.Item - MENU_ALARM1] ^= Bits[Menu.SubItem - 4];  // Toggle day.
                       Menu.LastItem=""; // Forces a redraw.
-                      DoHapatic = true;
+                      DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
                   }else if (Menu.SubItem == 11){
                       Alarms_Active[Menu.Item - MENU_ALARM1] ^= ALARM_REPEAT;  // Toggle repeat.
                       Menu.LastItem=""; // Forces a redraw.
-                      DoHapatic = true;
+                      DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
                   }else if (Menu.SubItem == 12){
                       Alarms_Active[Menu.Item - MENU_ALARM1] ^= ALARM_ACTIVE;  // Toggle Active.
                       Menu.LastItem=""; // Forces a redraw.
-                      DoHapatic = true;
+                      DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
                   }
               }else if (Menu.Item == MENU_TIMERS){  // Timers menu.
                   Menu.Style = MENU_INTIMERS;
                   Menu.Item = MENU_TIMEDN;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;
                   SetTurbo();
               }else if (Menu.Item == MENU_TIMEDN){
                   if (Menu.SubItem == 4){
                       if (TimerDown.Active){
                           TimerDown.Active=false;
-                          DoHapatic = true;
+                          DoHaptic = true;
                           UpdateDisp = true;  // Quick Update.
                           SetTurbo();
                       }else if ((TimerDown.MaxMins + TimerDown.MaxHours) > 0){
@@ -1167,7 +1165,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                           TimerDown.Hours = TimerDown.MaxHours;
                           TimerDown.LastUTC = WatchTime.UTC_RAW - WatchTime.UTC.Second;
                           TimerDown.Active = true;
-                          DoHapatic = true;
+                          DoHaptic = true;
                           UpdateDisp = true;  // Quick Update.
                           SetTurbo();
                       }
@@ -1175,14 +1173,14 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                       Menu.SubItem++;
                       if (TimerDown.MaxMins + TimerDown.MaxHours == 0 && Menu.SubItem == 4) Menu.SubItem = 3; //Stop it from being startable.
                       if (TimerDown.Active) Menu.SubItem = 4;
-                      DoHapatic = true;
+                      DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
                   }
               }else if (Menu.Item == MENU_TIMEUP){
                   if (Menu.SubItem == 0){
                       Menu.SubItem = 1;
-                      DoHapatic = true;
+                      DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
                   }else{
@@ -1194,14 +1192,14 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                           TimerUp.StopAt = TimerUp.SetAt;
                           TimerUp.Active = true;
                       }
-                      DoHapatic = true;
+                      DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
                   }
               }else if (Menu.Item == MENU_SYNC){  // Sync Time
                   if (Menu.SubItem == 0){
                       Menu.SubItem++;
-                      DoHapatic = true;
+                      DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
                   }else{
@@ -1225,7 +1223,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                       WatchTime.LastDate="";
                       Menu.Item = MENU_STEPS;
                       Menu.SubItem = 0;
-                      DoHapatic = true;
+                      DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
                   }
@@ -1233,69 +1231,69 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   Options.LightMode = !Options.LightMode;
                   Menu.LastItem=""; // Forces a redraw.
                   Updates.Full = true;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == MENU_SIDE){  // Dexterity Mode
                   Options.Lefty = !Options.Lefty;
                   Menu.LastItem=""; // Forces a redraw.
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == MENU_SWAP){  // Swap Menu/Back Buttons
                   Options.Swapped = !Options.Swapped;
                   Menu.LastItem=""; // Forces a redraw.
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == MENU_BRDR){  // Border Mode
                   Options.Border = !Options.Border;
                   Menu.LastItem=""; // Forces a redraw.
                   display.init(0,false);  // Force it here so it fixes the border.
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == MENU_ORNT){  // Watchy Orientation
                   Options.Orientated = !Options.Orientated;
                   Menu.LastItem=""; // Forces a redraw.
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == MENU_MODE){  // Switch Time Mode
                   Options.TwentyFour = !Options.TwentyFour;
                   Menu.LastItem=""; // Forces a redraw.
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == MENU_FEED){  // Feedback.
                   Options.Feedback = !Options.Feedback;
                   Menu.LastItem=""; // Forces a redraw.
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == MENU_TRBO){  // Turbo
                   Options.Turbo = roller(Options.Turbo + 1, 0, 10);
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == MENU_SCRN){  // Reset Screen
                   GuiMode = WATCHON;
                   WatchTime.LastDay="";
                   WatchTime.LastDate="";
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   Updates.Full = true;
                   SetTurbo();
               }else if (Menu.Item == MENU_WIFI){  // Watchy Connect
                   Menu.SubItem++;
                   WatchyAPOn = true;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == MENU_OTAU || Menu.Item == MENU_OTAM){  // Watchy OTA
                   Menu.SubItem++;
                   OTAUpdate=true;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == MENU_RSET){  // Watchy Reboot
@@ -1308,7 +1306,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
           if (Menu.Item == MENU_STEPS && Menu.SubItem > 0) {  // Exit for Steps, back to Steps.
               if (Menu.SubItem == 4) Menu.SubItem = 2;  // Go back to the Hour, so it is the same as the alarms.
               Menu.SubItem--;
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }else if (Menu.Item >= MENU_ALARM1 && Menu.Item <= MENU_ALARM4 && Menu.SubItem > 0){
@@ -1317,28 +1315,28 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               }else if (Menu.SubItem > 3){
                   Menu.SubItem = 1;
               }
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }else if (Menu.Item == MENU_TIMEDN && Menu.SubItem > 0){
               Menu.SubItem--;
               if (TimerDown.Active) Menu.SubItem = 0;
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }else if (Menu.Item == MENU_TIMEUP && Menu.SubItem > 0){
               Menu.SubItem = 0;
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }else if (Menu.Item == MENU_SYNC && Menu.SubItem > 0){
               Menu.SubItem = 0;
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }else if (Menu.Item == MENU_WIFI && Menu.SubItem > 0){
               Menu.SubItem = 0;
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }else if ((Menu.Item == MENU_OTAU || Menu.Item == MENU_OTAM) && Menu.SubItem > 0){
@@ -1346,13 +1344,13 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
           }else if (Menu.Style == MENU_INALARMS){  // Alarms
               Menu.Style = MENU_INNORMAL;
               Menu.Item = MENU_ALARMS;
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;
               SetTurbo();
           }else if (Menu.Style == MENU_INTIMERS){  // Timers
               Menu.Style = MENU_INNORMAL;
               Menu.Item = MENU_TIMERS;
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;          
               SetTurbo();
           }else if (Menu.Style == MENU_INOPTIONS){  // Options
@@ -1360,7 +1358,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               Menu.SubSubItem = 0;
               Menu.Item=MENU_OPTIONS;
               Menu.Style=MENU_INNORMAL;
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }else{
@@ -1369,7 +1367,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               WatchTime.LastDate="";
               Menu.SubItem = 0;
               Menu.SubSubItem = 0;
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }
@@ -1383,7 +1381,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               case 1: // Hour
                   Steps.Hour=roller(Steps.Hour + 1, 0,23);
                   Steps.Reset = false;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
                   break;
@@ -1393,7 +1391,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   mh = roller(mh + 1, 0, 5);
                   Steps.Minutes = (mh * 10) + ml;
                   Steps.Reset = false;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
                   break;
@@ -1403,7 +1401,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   ml = roller(ml + 1, 0, 9);
                   Steps.Minutes = (mh * 10) + ml;
                   Steps.Reset = false;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }
@@ -1411,7 +1409,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               if (Menu.SubItem == 1){ // Hour
                   Alarms_Hour[Menu.Item - MENU_ALARM1]=roller(Alarms_Hour[Menu.Item - MENU_ALARM1] + 1, 0,23);
                   Alarms_Active[Menu.Item - MENU_ALARM1] &= ALARM_NOTRIGGER;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.SubItem == 2){ //  x0 Minutes
@@ -1420,7 +1418,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   mh = roller(mh + 1, 0, 5);
                   Alarms_Minutes[Menu.Item - MENU_ALARM1] = (mh * 10) + ml;
                   Alarms_Active[Menu.Item - MENU_ALARM1] &= ALARM_NOTRIGGER;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.SubItem == 3){ //  x0 Minutes
@@ -1429,12 +1427,12 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   ml = roller(ml + 1, 0, 9);
                   Alarms_Minutes[Menu.Item - MENU_ALARM1] = (mh * 10) + ml;
                   Alarms_Active[Menu.Item - MENU_ALARM1] &= ALARM_NOTRIGGER;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.SubItem > 3){
                   Menu.SubItem = roller(Menu.SubItem + 1, 4, 12);
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }
@@ -1443,7 +1441,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               case 1: // Hour
                   TimerDown.MaxHours=roller(TimerDown.MaxHours + 1, 0,23);
                   StopCD();
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
                   break;
@@ -1453,7 +1451,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   mh = roller(mh + 1, 0, 5);
                   TimerDown.MaxMins = (mh * 10) + ml;
                   StopCD();
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
                   break;
@@ -1463,13 +1461,13 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   ml = roller(ml + 1, 0, 9);
                   TimerDown.MaxMins = (mh * 10) + ml;
                   StopCD();
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }
           }else if (Menu.Item == MENU_SYNC && Menu.SubItem > 0){
               Menu.SubItem = roller(Menu.SubItem - 1, 1, 3);
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }else if (Menu.Item == MENU_WIFI && Menu.SubItem > 0){
@@ -1486,7 +1484,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               }
               Menu.SubItem=0;
               Menu.SubSubItem=0;
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }
@@ -1500,7 +1498,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               case 1: // Hour
                   Steps.Hour=roller(Steps.Hour - 1, 0,23);
                   Steps.Reset = false;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
                   break;
@@ -1510,7 +1508,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   mh = roller(mh - 1, 0, 5);
                   Steps.Minutes = (mh * 10) + ml;
                   Steps.Reset = false;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
                   break;
@@ -1520,7 +1518,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   ml = roller(ml - 1, 0, 9);
                   Steps.Minutes = (mh * 10) + ml;
                   Steps.Reset = false;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }
@@ -1528,7 +1526,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               if (Menu.SubItem == 1){ // Hour
                   Alarms_Hour[Menu.Item - MENU_ALARM1]=roller(Alarms_Hour[Menu.Item - MENU_ALARM1] - 1, 0,23);
                   Alarms_Active[Menu.Item - MENU_ALARM1] &= ALARM_NOTRIGGER;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
              }else if (Menu.SubItem == 2){ //  x0 Minutes
@@ -1537,7 +1535,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   mh = roller(mh - 1, 0, 5);
                   Alarms_Minutes[Menu.Item - MENU_ALARM1] = (mh * 10) + ml;
                   Alarms_Active[Menu.Item - MENU_ALARM1] &= ALARM_NOTRIGGER;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.SubItem == 3){ //  x0 Minutes
@@ -1546,12 +1544,12 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   ml = roller(ml - 1, 0, 9);
                   Alarms_Minutes[Menu.Item - MENU_ALARM1] = (mh * 10) + ml;
                   Alarms_Active[Menu.Item - MENU_ALARM1] &= ALARM_NOTRIGGER;
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.SubItem > 3){
                   Menu.SubItem = roller(Menu.SubItem - 1, 4, 12);
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }
@@ -1560,7 +1558,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               case 1: // Hour
                   TimerDown.MaxHours=roller(TimerDown.MaxHours - 1, 0,23);
                   StopCD();
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
                   break;
@@ -1570,7 +1568,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   mh = roller(mh - 1, 0, 5);
                   TimerDown.MaxMins = (mh * 10) + ml;
                   StopCD();
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
                   break;
@@ -1580,13 +1578,13 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   ml = roller(ml - 1, 0, 9);
                   TimerDown.MaxMins = (mh * 10) + ml;
                   StopCD();
-                  DoHapatic = true;
+                  DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }
           }else if (Menu.Item == MENU_SYNC && Menu.SubItem > 0){
               Menu.SubItem = roller(Menu.SubItem + 1, 1, 3);
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }else if (Menu.Item == MENU_WIFI && Menu.SubItem > 0){
@@ -1603,7 +1601,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               }
               Menu.SubItem=0;
               Menu.SubSubItem=0;
-              DoHapatic = true;
+              DoHaptic = true;
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }
@@ -2048,7 +2046,7 @@ void WatchyGSR::initZeros(){
     OTAUpdate = false;
     OTATimer = millis();
     WatchyAPOn = false;
-    DoHapatic = false;
+    DoHaptic = false;
     Steps.Reset=false;
     Alarms_Active[1]=0;
     Alarms_Active[2]=0;
