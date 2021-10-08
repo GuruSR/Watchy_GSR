@@ -402,20 +402,20 @@ void WatchyGSR::init(){
                       ArduinoOTA.begin();
                       }else if (Menu.Item == MENU_OTAM){
                           /*return index page which is stored in basicIndex */
-                          server.on("/", HTTP_GET, [=, this]() {
+                          server.on("/", HTTP_GET, [=]() {
                             server.sendHeader("Connection", "close");
                             server.send(200, "text/html", basicIndex);
                           });
-                          server.on("/settings", HTTP_GET, [=, this]() {
+                          server.on("/settings", HTTP_GET, [=]() {
                             String S = settingsA + GetSettings() + settingsB;
                             server.sendHeader("Connection", "close");
                             server.send(200, "text/html", S);
                           });
-                          server.on("/update", HTTP_GET, [=, this]() {
+                          server.on("/update", HTTP_GET, [=]() {
                             server.sendHeader("Connection", "close");
                             server.send(200, "text/html", updateIndex);
                           });
-                          server.on("/settings", HTTP_POST, [=, this](){
+                          server.on("/settings", HTTP_POST, [=](){
                               if (server.argName(0) == "settings") StoreSettings(server.arg(0));
                               server.sendHeader("Connection", "close");
                               server.send(200, "text/html", settingsDone);
