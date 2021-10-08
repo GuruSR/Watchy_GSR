@@ -4,7 +4,7 @@ Steps -> Reset Time -> Reset Steps
 Alarms -> (Alarms 1 to 4) -> HH:MM -> Days + Repeat + Active settings
 Timers -> Countdown Timer & Elapsed Time\n
 Options ->
-            Display Style  --- Lite or Dark mode.
+            Display Style  --- Light or Dark mode.
             Border Mode    --- Show (white) or Hide (black) the border on the display.
             Dexterity      --- Swap the Back/Menu with UP/DOWN for left-handed users.
             Menu & Back    --- Normal or Swap the Menu & Back button positions.
