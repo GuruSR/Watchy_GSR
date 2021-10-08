@@ -158,7 +158,7 @@ void WatchyGSR::init(){
     uint64_t wakeupBit;
     time_t NTPWaiting, RightNOW, LastCheck;
     int AlarmIndex, Pushed;                          // Alarm being played.
-    bool AlarmsOn, WaitForNext, AP, Pulse;
+    bool AlarmsOn, WaitForNext, Pulse;
     unsigned long Since, AlarmReset, APLoop;
 
     esp_sleep_wakeup_cause_t wakeup_reason;
@@ -319,7 +319,7 @@ void WatchyGSR::init(){
                                 WiFi.setHostname(WiFi_AP_SSID);
                                 wifiManager.setConfigPortalBlocking(false);
                                 wifiManager.setWiFiAPHidden(WiFi_AP_HIDE);
-                                AP = WiFi.softAP(WiFi_AP_SSID,WiFi_AP_PSWD,1,WiFi_AP_HIDE);
+                                WiFi.softAP(WiFi_AP_SSID,WiFi_AP_PSWD,1,WiFi_AP_HIDE);
                             }else if (WiFi.getMode() == WIFI_AP){
                                 wifiManager.startWebPortal();
                                 Menu.SubItem++;
@@ -565,7 +565,7 @@ void WatchyGSR::drawTime(){
 
 void WatchyGSR::drawDay(){
     int16_t  x1, y1;
-    uint16_t w, h, tw;
+    uint16_t w, h;
     String O;
 
     O = dayStr(WatchTime.Local.Wday + 1);
@@ -581,7 +581,7 @@ void WatchyGSR::drawDay(){
 
 void WatchyGSR::drawDate(){
     int16_t  x1, y1;
-    uint16_t w, h, tw;
+    uint16_t w, h;
     String O;
 
     display.setFont(&aAntiCorona15pt7b);  //Shahd_Serif17pt7b);
@@ -598,7 +598,7 @@ void WatchyGSR::drawDate(){
 
 void WatchyGSR::drawYear(){
     int16_t  x1, y1;
-    uint16_t w, h, tw;
+    uint16_t w, h;
     String O;
 
     display.setFont(&aAntiCorona16pt7b);
@@ -614,7 +614,7 @@ void WatchyGSR::drawYear(){
 
 void WatchyGSR::drawMenu(){
     int16_t  x1, y1;
-    uint16_t w, h, tw;
+    uint16_t w, h;
     String O, S;
 
     display.setFont(&aAntiCorona12pt7b);
