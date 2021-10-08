@@ -334,7 +334,7 @@ void WatchyGSR::init(){
                                     Menu.SubItem = 0;
                                     break;
                                 }
-                                if (wifiManager.process() == WL_CONNECTED){ // Setting worked.
+                                if (wifiManager.process()){ // Setting worked.
                                     Menu.SubItem = 0;
                                     break;
                                 }
