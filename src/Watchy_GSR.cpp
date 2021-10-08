@@ -159,7 +159,7 @@ void WatchyGSR::init(){
     time_t NTPWaiting, RightNOW, LastCheck;
     int AlarmIndex, Pushed;                          // Alarm being played.
     bool AlarmsOn, WaitForNext, Pulse;
-    unsigned long Since, AlarmReset, APLoop;
+    unsigned long Since, AlarmReset, APLoop = 0;
 
     esp_sleep_wakeup_cause_t wakeup_reason;
     Wire.begin(SDA, SCL); //init i2c
@@ -1862,7 +1862,7 @@ void WatchyGSR::CheckCD(){
 
 // Counts the active (255) alarms/timers and after 3, sets them to lower values.
 void WatchyGSR::CalculateTones(){
-    uint8_t Count;
+    uint8_t Count = 0;
     CheckAlarm(0); CheckAlarm(1); CheckAlarm(2); CheckAlarm(3); CheckCD();
     if (Alarms_Times[0] > 0) Count++;
     if (Alarms_Times[1] > 0) Count++;
