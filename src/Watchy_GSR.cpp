@@ -1985,6 +1985,8 @@ uint8_t WatchyGSR::getButtonMaskToID(uint64_t HW){
    return 0;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
 IRAM_ATTR uint8_t WatchyGSR::getSwapped(uint8_t pIn){
     switch (pIn){
         case 1:
@@ -1993,6 +1995,7 @@ IRAM_ATTR uint8_t WatchyGSR::getSwapped(uint8_t pIn){
           return Options.Swapped ? 1 : 2;
     }
 }
+#pragma GCC diagnostic pop
 
 void WatchyGSR::ScreenRefresh(){
     uint16_t XL, YL, XH, YH;
