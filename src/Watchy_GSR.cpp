@@ -23,7 +23,7 @@ RTC_DATA_ATTR struct Stepping {
 
 RTC_DATA_ATTR struct Optional {
     bool TwentyFour;                  // If the face shows 24 hour or Am/Pm.
-    bool LiteMode;                    // Lite/Dark mode.
+    bool LightMode;                    // Light/Dark mode.
     bool Feedback;                    // Hapatic Feedback on buttons.
     bool Border;                      // True to set the border to black/white.
     bool Lefty;                       // Swaps the buttons to the other side.
@@ -520,8 +520,8 @@ void WatchyGSR::drawWatchFace(){
 
     Direction = sensor.getDirection();  // Directional screen on.  == DIRECTION_DISP_UP
 
-    display.fillScreen(Options.LiteMode ? GxEPD_WHITE : GxEPD_BLACK);
-    display.setTextColor(Options.LiteMode ? GxEPD_BLACK : GxEPD_WHITE);
+    display.fillScreen(Options.LightMode ? GxEPD_WHITE : GxEPD_BLACK);
+    display.setTextColor(Options.LightMode ? GxEPD_BLACK : GxEPD_WHITE);
 
     ScreenOn = (Direction == DIRECTION_DISP_UP || Direction == DIRECTION_TOP_EDGE || Battery.Direction == 1 || true);  // True set due to bug.
 
@@ -548,7 +548,7 @@ void WatchyGSR::drawTime(){
     PM = false;
     O = MakeTime(WatchTime.Local.Hour, WatchTime.Local.Minute, PM);
     display.setFont(&aAntiCorona36pt7b);
-    display.setTextColor(Options.LiteMode ? GxEPD_BLACK : GxEPD_WHITE);
+    display.setTextColor(Options.LightMode ? GxEPD_BLACK : GxEPD_WHITE);
 
     display.getTextBounds(O, 0, TimeY, &x1, &y1, &w, &h);
     tw = (200 - w) /2;
@@ -557,8 +557,8 @@ void WatchyGSR::drawTime(){
 
     if (PM){
         tw=clamp(tw + w + 6, 0, 184);
-        display.drawBitmap(tw, TimeY - 45, PMIndicator, 6, 6, Options.LiteMode ? GxEPD_BLACK : GxEPD_WHITE);
-//        display.fillRect(tw, TimeY - 45 ,6 ,6, Options.LiteMode ? GxEPD_BLACK : GxEPD_WHITE);
+        display.drawBitmap(tw, TimeY - 45, PMIndicator, 6, 6, Options.LightMode ? GxEPD_BLACK : GxEPD_WHITE);
+//        display.fillRect(tw, TimeY - 45 ,6 ,6, Options.LightMode ? GxEPD_BLACK : GxEPD_WHITE);
     }
     Updates.Time = (O != WatchTime.LastTime);
     WatchTime.LastTime = O;
@@ -571,7 +571,7 @@ void WatchyGSR::drawDay(){
 
     O = dayStr(WatchTime.Local.Wday + 1);
     display.setFont(&aAntiCorona16pt7b);
-    display.setTextColor(Options.LiteMode ? GxEPD_BLACK : GxEPD_WHITE);
+    display.setTextColor(Options.LightMode ? GxEPD_BLACK : GxEPD_WHITE);
     display.getTextBounds(O, 0, DayY, &x1, &y1, &w, &h);
     w = (200 - w) /2;
     display.setCursor(w, DayY);
@@ -586,7 +586,7 @@ void WatchyGSR::drawDate(){
     String O;
 
     display.setFont(&aAntiCorona15pt7b);  //Shahd_Serif17pt7b);
-    display.setTextColor(Options.LiteMode ? GxEPD_BLACK : GxEPD_WHITE);
+    display.setTextColor(Options.LightMode ? GxEPD_BLACK : GxEPD_WHITE);
     O = String(monthStr(WatchTime.Local.Month)) + " " + String(WatchTime.Local.Day);
     //O="September 30";
     display.getTextBounds(O, 0, DateY, &x1, &y1, &w, &h);
@@ -603,7 +603,7 @@ void WatchyGSR::drawYear(){
     String O;
 
     display.setFont(&aAntiCorona16pt7b);
-    display.setTextColor(Options.LiteMode ? GxEPD_BLACK : GxEPD_WHITE);
+    display.setTextColor(Options.LightMode ? GxEPD_BLACK : GxEPD_WHITE);
     O = String(WatchTime.Local.Year + 1900);
     display.getTextBounds(O, 0, YearY, &x1, &y1, &w, &h);
     w = (200 - w) /2;
@@ -619,9 +619,9 @@ void WatchyGSR::drawMenu(){
     String O, S;
 
     display.setFont(&aAntiCorona12pt7b);
-    display.fillRect(0, MenuTop, 200, MenuHeight, Options.LiteMode ? GxEPD_WHITE : GxEPD_BLACK);
-    display.drawBitmap(0, MenuTop, (Menu.Style == MENU_INOPTIONS) ? OptionsMenuBackground : MenuBackground, 200, MenuHeight, Options.LiteMode ? GxEPD_BLACK : GxEPD_WHITE);
-    display.setTextColor(Options.LiteMode && Menu.Style != MENU_INNORMAL ? GxEPD_WHITE : GxEPD_BLACK);
+    display.fillRect(0, MenuTop, 200, MenuHeight, Options.LightMode ? GxEPD_WHITE : GxEPD_BLACK);
+    display.drawBitmap(0, MenuTop, (Menu.Style == MENU_INOPTIONS) ? OptionsMenuBackground : MenuBackground, 200, MenuHeight, Options.LightMode ? GxEPD_BLACK : GxEPD_WHITE);
+    display.setTextColor(Options.LightMode && Menu.Style != MENU_INNORMAL ? GxEPD_WHITE : GxEPD_BLACK);
     if ((Menu.Item == MENU_OTAU || Menu.Item == MENU_OTAM) && (Menu.SubItem == 2 || Menu.SubItem == 3)) O = "Upload Firmware"; else O = Headings[Menu.Item];
     display.getTextBounds(O, 0, HeaderY, &x1, &y1, &w, &h);
     w = (196 - w) /2;
@@ -629,7 +629,7 @@ void WatchyGSR::drawMenu(){
     display.print(O);
     Updates.Header = (O != Menu.LastHeader);
     Menu.LastHeader = O;
-    display.setTextColor(GxEPD_BLACK);  // Only show menu in lite mode
+    display.setTextColor(GxEPD_BLACK);  // Only show menu in light mode
     if (Menu.Item == MENU_STEPS){  //Steps
         switch (Menu.SubItem){
             case 0: // Steps.
@@ -741,8 +741,8 @@ void WatchyGSR::drawMenu(){
     }else if (Menu.Item == MENU_OPTIONS){ // Options Menu
         O = "MENU to Enter";
     }else if (Menu.Item == MENU_DISP){  // Switch Mode
-        if (Options.LiteMode){
-            O = "Lite";
+        if (Options.LightMode){
+            O = "Light";
         }else {
             O = "Dark";
         }
@@ -1005,7 +1005,7 @@ void WatchyGSR::drawChargeMe(){
   int8_t D = 0;
   if (Battery.Direction == 1){
       // Show Battery charging bitmap.
-      display.drawBitmap(155, 178, Charging, 40, 17, Options.LiteMode ? GxEPD_BLACK : GxEPD_WHITE);
+      display.drawBitmap(155, 178, Charging, 40, 17, Options.LightMode ? GxEPD_BLACK : GxEPD_WHITE);
       D = 2;
       // Check if the NTP has been done.
       if (WatchTime.UTC_RAW - NTPData.Last > 14400 && NTPData.State == 0){
@@ -1015,7 +1015,7 @@ void WatchyGSR::drawChargeMe(){
       }
   }else if (Battery.Direction == -1 && getBatteryVoltage() < MinBattery){
       // Show Battery needs charging bitmap.
-      display.drawBitmap(155, 178, ChargeMe, 40, 17, Options.LiteMode ? GxEPD_BLACK : GxEPD_WHITE);
+      display.drawBitmap(155, 178, ChargeMe, 40, 17, Options.LightMode ? GxEPD_BLACK : GxEPD_WHITE);
       D = 1;
   }
   Updates.Charge = (D != Battery.LastState);
@@ -1024,10 +1024,10 @@ void WatchyGSR::drawChargeMe(){
 
 void WatchyGSR::drawStatus(){
   if (WatchyStatus > ""){
-      display.fillRect(NTPX, NTPY - 19, 60, 20, Options.LiteMode ? GxEPD_WHITE : GxEPD_BLACK);
+      display.fillRect(NTPX, NTPY - 19, 60, 20, Options.LightMode ? GxEPD_WHITE : GxEPD_BLACK);
       display.setFont(&Bronova_Regular13pt7b);
       display.setCursor(NTPX, NTPY);
-      display.setTextColor(Options.LiteMode ? GxEPD_BLACK : GxEPD_WHITE);
+      display.setTextColor(Options.LightMode ? GxEPD_BLACK : GxEPD_WHITE);
       display.print(WatchyStatus);
   }
 }
@@ -1230,7 +1230,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                       SetTurbo();
                   }
               }else if (Menu.Item == MENU_DISP){  // Switch Mode
-                  Options.LiteMode = !Options.LiteMode;
+                  Options.LightMode = !Options.LightMode;
                   Menu.LastItem=""; // Forces a redraw.
                   Updates.Full = true;
                   DoHapatic = true;
@@ -2090,7 +2090,7 @@ String WatchyGSR::GetSettings(){
     I[0] = (Steps.Hour);
     I[1] = (Steps.Minutes);
     K  = Options.TwentyFour ? 1 : 0;
-    K |= Options.LiteMode ? 2 : 0;
+    K |= Options.LightMode ? 2 : 0;
     K |= Options.Feedback ? 4 : 0;
     K |= Options.Border ? 8 : 0;
     K |= Options.Lefty ? 16 : 0;
@@ -2134,7 +2134,7 @@ void WatchyGSR::StoreSettings(String FromUser){
     if (L > J) {
         V = O[J];
         Options.TwentyFour = (V & 1) ? true : false;
-        Options.LiteMode = (V & 2) ? true : false;
+        Options.LightMode = (V & 2) ? true : false;
         Options.Feedback = (V & 4) ? true : false;
         Options.Border = (V & 8) ? true : false;
         Options.Lefty = (V & 16) ? true : false;
