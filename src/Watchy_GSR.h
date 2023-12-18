@@ -21,18 +21,20 @@
 #include "Locale_GSR.h"
 #include <mbedtls/base64.h>
 #include <Wire.h>
-#include <StableBMA.h>
+#include <StableBMA.h>  /* Comment this line out for no BMA support */
 #include "Fonts_GSR.h"
 #include "Icons_GSR.h"
 #include "ArduinoNvs.h"
 #include <esp32-hal.h>
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 
 class WatchyGSR{
     public:
         static SmallRTC SRTC;
         static SmallNTP SNTP;
         static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
-        static constexpr const char* Build = "1.4.7B";
+        static constexpr const char* Build = "1.4.7C";
         enum DesOps {dSTATIC, dLEFT, dRIGHT, dCENTER};
 
     public:
@@ -47,14 +49,14 @@ class WatchyGSR{
         virtual void drawYear();
         virtual void handleButtonPress(uint8_t Pressed) final;
         virtual void deepSleep() final;
-        virtual float getBatteryVoltage() final;
-        virtual float BatteryRead() final;
+        static float getBatteryVoltage();
+        static float BatteryRead();
         virtual bool IsDark() final;
         virtual bool IsAM() final;
         virtual bool IsPM() final;
         virtual String GetLangWebID() final;
         virtual void CheckButtons() final;
-        uint8_t getButtonPins();
+        static uint8_t getButtonPins();
         void drawChargeMe(bool Dark = false);
         void drawStatus(bool Dark = false);
         virtual bool IsBatteryHidden() final;
@@ -65,7 +67,7 @@ class WatchyGSR{
         virtual void ClockSeconds() final;
         virtual uint16_t ForeColor() final;
         virtual uint16_t BackColor() final;
-        virtual uint16_t Debounce() final;
+        static uint16_t Debounce();
         virtual uint8_t CurrentStyleID() final;
         virtual uint8_t CurrentGameID() final;
         virtual void InsertPost();
@@ -107,6 +109,7 @@ class WatchyGSR{
         virtual uint32_t CurrentStepCount() final;
         virtual String YesterdaySteps() final;
         virtual uint32_t YesterdayStepCount() final;
+        virtual bool BMAAvailable() final;
         virtual String CurrentWatchStyle() final;
         virtual String CurrentGameStyle() final;
         virtual void AllowDefaultWatchStyles(bool Allow = true) final;
@@ -161,16 +164,21 @@ class WatchyGSR{
         void GoDark(bool DeepSleeping = false);
         void ForceInputs();
         void detectBattery();
+        static bool inBrownOut();
+        static void BrownOutDetect(bool On = false);
+        void SetupESPValues();
         void ProcessNTP();
-        void UpdateUTC(bool OnlyRead = false);
+        void UpdateUTC();
         void UpdateClock();
         void UpdateTimerDown();
         bool TimerAbuse();
         void SoundBegin();
         bool SoundActive();
+        void KeysStart();
+        void KeysStop();
         static void SoundAlarms(void * parameter);
+        static void KeysCheck(void * parameter);
         void ManageTime();
-        void ManageDrift();
         void _rtcConfig();
         void _bmaConfig();
         void UpdateBMA();
@@ -187,8 +195,9 @@ class WatchyGSR{
         String getReduce(uint8_t Amount);
         void monitorSteps();
         uint8_t getButtonMaskToID(uint64_t HW);
-        uint8_t getSWValue(bool SW1, bool SW2, bool SW3, bool SW4);
+        static uint8_t getSWValue(bool SW1, bool SW2, bool SW3, bool SW4);
         void SetAskWiFi(bool SetWiFi);
+        bool WiFiInProgress();
         void processWiFiRequest();
         String WiFiIndicator(uint8_t Index);
         void UpdateWiFiPower(String SSID, String PSK);
@@ -203,8 +212,16 @@ class WatchyGSR{
         void initZeros();
         String GetSettings();
         void StoreSettings(String FromUser);
+        uint16_t USCtoWord(unsigned char High, unsigned char Low);
+        void WordtoUSC(uint16_t Word, unsigned char &High, unsigned char &Low);
+        uint32_t USCtoDWord(unsigned char HHigh, unsigned char HLow, unsigned char LHigh, unsigned char LLow);
+        void DWordtoUSC(uint32_t DWord, unsigned char &HHigh, unsigned char &HLow, unsigned char &LHigh, unsigned char &LLow);
         void RetrieveSettings();
         void RecordSettings();
+        void ResetOTA();
+        void EndOTA(uint8_t Seconds);
+        bool IsEndOTA();
+        void ResetEndOTA();
         bool OkNVS(String FaceName);
         void SetNVS(String FaceName, bool Enabled = true);
         void NVSEmpty();
@@ -224,7 +241,7 @@ class WatchyGSR{
         void DisplaySleep();
         void ProcessWeather();
         static void GSRWebGet(void * parameter);
-        void WatchFaceStart(uint8_t NewFace);
+        void WatchFaceStart(uint8_t NewFace, bool NoEndWiFi = false);
         bool ChangeGame(bool Up = true);
         void initGame(uint8_t GameID);
         void WatchFaceEnd();
@@ -290,17 +307,25 @@ struct TimeData final {
     tmElements_t UTC;         // Copy of UTC only split up for usage.
     tmElements_t Local;       // Copy of the Local time on init.
     String TimeZone;          // The location timezone, not the actual POSIX.
-    unsigned long EPSMS;      // Milliseconds (rounded to the enxt minute) when the clock was updated via NTP.
     bool NewMinute;           // Set to True when New Minute happens.
-    int64_t WatchyRTC;        // Counts Microseconds from boot.
-    bool DeadRTC;             // Set when Drift fails to get a good count less than 30 seconds.
+    bool ESPRTC;              // Tells the system you enabled the ESP32 internal RTC instead of an external one.
     uint8_t NextAlarm;        // Next index that will need to wake the Watchy from sleep to fire.
     bool BedTime;             // If the hour is within the Bed Time settings.
 };
 
+struct GSRCPUInfo final {
+    esp_chip_model_t Model;
+    long Base;
+    long BrownOutDetection;
+    bool HasWiFi;
+    bool HasBT;
+    bool HasBLE;
+};
 
 extern Designing Design;
 extern TimeData WatchTime;
+#ifdef STABLEBMA_H_INCLUDED
 extern StableBMA SBMA;
+#endif
 extern LocaleGSR LGSR;
 #endif

@@ -272,7 +272,7 @@ class LocaleGSR {
                    case 105:
                       return "MENU for Sync";
                    case 106:
-                      return "Use RTC";
+                      return "Use ESP32 RTC";
                    case 107:
                       return "NTP Auto Sync";
                    case 108:
@@ -315,6 +315,10 @@ class LocaleGSR {
                       return "Imperial";
                    case 127:
                       return "Game";
+                   case 128:
+                      return "Weather Update";
+                   case 129:
+                      return "Adjust Drift";
                 }
             }
         }
@@ -340,7 +344,7 @@ class LocaleGSR {
                    case 6:
                       return "Store"; // WiFi D
                    case 7:
-                      return "Watchy settings restored!  OTA Website Off"; // 5 to 7 for Settings Done
+                      return "Watchy settings restored!"; // 5 to 7 for Settings Done
                    case 8:
                       return "Watchy Upload New Firmware"; // 8 to 13 Upgrade
                    case 9:
@@ -358,11 +362,17 @@ class LocaleGSR {
                    case 15:
                       return "PASS";  // WiFi C
                    case 16:
-                      return "Watchy Additional APs updated!  OTA Website Off";
+                      return "Watchy Additional APs updated!";
                    case 17:
                       return "Watchy OpenWeatherMap.org API Key"; // API Key
                    case 18:
-                      return "OpenWeatherMap.org API Key set!  OTA Website Off";
+                      return "OpenWeatherMap.org API Key set!";
+                   case 19:
+                      return "Menu";
+                   case 20:
+                      return "Exit";
+                   case 21:
+                      return "OTA Website turning off";
                 }
             }
         }

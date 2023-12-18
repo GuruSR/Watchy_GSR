@@ -1,6 +1,13 @@
 #ifndef DEFINES_GSR_H
 #define DEFINES_GSR_H
 
+// GPIO
+#define GSR_GPIO_SEL_4   (BIT(4))                         /*!< Pin 4 selected */
+#define GSR_GPIO_SEL_25  (BIT(25))                        /*!< Pin 25 selected */
+#define GSR_GPIO_SEL_26  (BIT(26))                        /*!< Pin 26 selected */
+#define GSR_GPIO_SEL_32  ((uint64_t)(((uint64_t)1)<<32))  /*!< Pin 32 selected */
+#define GSR_GPIO_SEL_35  ((uint64_t)(((uint64_t)1)<<35))  /*!< Pin 35 selected */
+
 // WiFi
 #define WiFi_AP_SSID "Watchy Connect"
 #define WiFi_AP_PSWD "Watchy123"
@@ -64,9 +71,9 @@
 #define GSR_MENU_TRBO 22
 #define GSR_MENU_DARK 23
 #define GSR_MENU_SAVE 24
-#define GSR_MENU_TPWR 25
-#define GSR_MENU_INFO 26
-#define GSR_MENU_TRBL 27
+#define GSR_MENU_INFO 25
+#define GSR_MENU_TRBL 26
+#define GSR_MENU_TPWR 27
 #define GSR_MENU_SYNC 28
 #define GSR_MENU_WEAT 29
 #define GSR_MENU_WIFI 30
@@ -109,12 +116,6 @@
 #define EPD_RESET 9
 #define EPD_BUSY 19
 #define GSR_VIB_MOTOR_PIN 13
-#define GSR_MENU_PIN 26
-#define GSR_BACK_PIN 25
-#define GSR_DOWN_PIN 4
-#define GSR_MENU_MASK GPIO_SEL_26
-#define GSR_BACK_MASK GPIO_SEL_25
-#define GSR_DOWN_MASK GPIO_SEL_4
 
 //SetCPU defines.
 #define GSR_CPUMAX 65280
