@@ -185,7 +185,7 @@
 - **ADD:**  Added CleanString for JSON data.
 - **ADD:**  IsMetric function to find out of the weather scale is Metric or not.
 
-**Version 1.4.7A:**
+**Version 1.4.7B:**
 - **FIX:**  Fixed the battery indicator on screen blanking FINALLY!
 - **FIX:**  Fixed the OTA Website and OTA Update so that they don't try to connect too fast via WiFi (which can cause a crash or brownout if done too fast).
 - **ADD:**  drawStatus() now has a Screen Blanking method that also now includes (for both), a Joystick icon showing the current active game "wants your attention".
@@ -194,3 +194,19 @@
 - **ADD:**  A function for changing the current Watchface forward or backward through the list, will return true if it actually switched.
 - **ADD:**  Migrated all the settings for Watchface Styles into 1 byte instead of 4 bools to save RTC Memory space, which includes new functions to set and retrieve those states.
 - **FIX:**  AskForWiFi() won't attempt to start the WiFi interface while the notification motor is active to avoid brownouts.
+
+**Version 1.4.7C:**
+- **FIX:**  Battery Detection for charging has changed, now using a float level system, should stop fantom charging indications.
+- **ADD:**  inBrownOut code to avoid overtaxing the battery during WiFi and other uses to reduce draw.  FreeRTOS BrownOut Detection is disabled.
+- **FIX:**  Leftover variable IDidIt from old loop replaced in 1.4.7 was blocking `InsertOnMinute` has been removed as it wasn't supposed to be there.
+- **FIX:**  Alarms not firing when Drift correction would reduce the time by 1 second at RTC read when an alarm woke the Watchy up, now has a WfNM (Wait for New Minute) flag for the main loop that only goes `false` when a new minute happens.
+- **ADD:**  Added configuration changes for keeping track of 2 Drift Values.
+- **ADD:**  Drift Value editing, so it can be altered after Drift Calculation has finished.  This helps with accuracy, see SmallRTC on Drift Calculation for more information on how to edit this value.
+- **FIX:**  Fixed Edit RTC's BACK button usage, was missing screen update requests which caused random jumps of 2 to 3 digits from previous spot.
+- **ADD:**  WiFi indicator will now have a ! at the end to denote it is "attempting to connect" to that AP, when the ! disappears, it is connected.
+- **ADD:**  BrownOut limiter to slow WiFi and other functions down in the event the battery level drops too much during operation, some functions may slow down considerably as battery level drops.
+- **ADD:**  Added threaded button detection, which helps improve button response.
+- **FIX:**  Fixed Alarms to be more global in response.
+- **FIX:**  Fixed Battery state causng non-Screen Blanking modes to keep Watchy awake for minutes.
+- **FIX:**  Sorted the lower menu items so that the WiFi functions are all together, made no sense offering WiFi settings when WiFi isn't available.
+- **ADD:**  With the inclusion of CPU ID detection, features unavailable will be absent if they do not exist on the current CPU.
