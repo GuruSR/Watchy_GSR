@@ -1556,9 +1556,9 @@ void WatchyGSR::detectBattery(){
     Mins = floor(Diff);
     if (Mins < 1) return; // No minute.
     Uping = 0.01; if (Mins > 1 && CBAT < 4.22) Uping = (Mins * 0.005);
-    BATOff = CBAT - Battery.Last; if (BATOff < 0.00 && BATOff > -0.01) BATOff = 0.00;        /* Clear off that bizarre - zero, nothing should be nothing! */
+    BATOff = CBAT - Battery.Last;
     if (BATOff < -0.1) { Battery.Level = -2; R = true; }                                     /* Battery sees a massive jump due to it being unplugged */
-    else if (BATOff < 0.00) { Battery.Level = gobig(Battery.Level - 1, -2); R = true; }      /* Drop down to -2 for discharging */
+    else if (BATOff < -0.00) { Battery.Level = gobig(Battery.Level - 1, -2); R = true; }      /* Drop down to -2 for discharging */
     else if (BATOff > 0.1) { Battery.Level = 3; R = true; }                                  /* Battery sees a massive jump due to it being plugged in */
     else if (BATOff >= Uping) { Battery.Level = golow(Battery.Level + Mins, 3); R = true; }  /* Jump up to 3 for charging */
     if (Battery.Level > 2){
