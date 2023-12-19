@@ -1782,7 +1782,6 @@ void WatchyGSR::ProcessNTP(){
       NTPData.UpdateUTC = false;
       NTPData.TimeZone = false;
       setStatus("");
-      Battery.Level=0;  // Stop it from thinking the battery went wild.
     }
   }
 }
