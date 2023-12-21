@@ -210,3 +210,8 @@
 - **FIX:**  Fixed Battery state causng non-Screen Blanking modes to keep Watchy awake for minutes.
 - **FIX:**  Sorted the lower menu items so that the WiFi functions are all together, made no sense offering WiFi settings when WiFi isn't available.
 - **ADD:**  With the inclusion of CPU ID detection, features unavailable will be absent if they do not exist on the current CPU.
+
+**Version 1.4.7C:**
+- **FIX:**  Fixed Watchy Connect to have no password to avoid TKIP connection issues (use with caution, recommend lowering WiFi transmission power to 7db and move it close to your device).
+- **FIX:**  Fixed Watchy Connect Menu option, pressing BACK now will tell you to WAIT.  The OTA Website will also do the same thing.  3 seconds later, you will be properly out.
+- **FIX:**  Battery Detection was incorrectly saving state during WiFi usage and would either say it was charging incorrectly, but will still show LOW battery.
