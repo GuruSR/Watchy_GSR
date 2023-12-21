@@ -10,7 +10,7 @@
 
 // WiFi
 #define WiFi_AP_SSID "Watchy Connect"
-#define WiFi_AP_PSWD "Watchy123"
+#define WiFi_AP_PSWD ""     // Leave out so there is no encryption, be careful setting WiFi passwords in public with this.  This is done as some devices will refuse to connect via TKIP.
 #define WiFi_AP_HIDE false  // Hide "WiFi_AP_SSID" so it doesn't show up in the normal scan list.  IS NOT A SECURITY METHOD!
 #define WiFi_AP_MAXC 4      // Maximum user connections (default is 4).
 #define WiFi_SSID_MAX 32    // Do not change these two values.

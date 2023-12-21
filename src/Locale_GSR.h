@@ -319,6 +319,8 @@ class LocaleGSR {
                       return "Weather Update";
                    case 129:
                       return "Adjust Drift";
+                   case 130:
+                      return "Please Wait";
                 }
             }
         }

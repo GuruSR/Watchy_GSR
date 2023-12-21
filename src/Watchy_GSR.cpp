@@ -577,17 +577,20 @@ void WatchyGSR::init(String datetime){
                 VibeTo(false);
                 OTAEnd=false;
                 endWiFi();
+                if (Menu.Item == GSR_MENU_WIFI && Menu.SubItem > 0) Menu.SubItem = 0;
                 if (OTAUpdate) Menu.SubItem=0;
                 UpdateUTC();
                 UpdateClock();
                 OTAUpdate=false;
+                setStatus("");
+                UpdateDisp |= Showing() | WatchyAPOn;
                 WatchyAPOn = false;
-                Battery.Level=0;  // Stop it from thinking the battery went wild.
+                //Battery.Level=0;  // Stop it from thinking the battery went wild.
                 Missed = 0; Button = 0;
-                UpdateDisp |= Showing();
               }
 
 /* OTA */
+              if (WatchyAPOn && IsEndOTA()) OTAEnd = true;  // Fail if holding back for 10 seconds OR 600 seconds has passed.
               if (OTAUpdate && !UpdateDisp && GSRWiFi.Slow == 0 && !inBrownOut()){
                 switch (Menu.SubItem){
                   case 1: // Wait for WiFi to connect or fail.
@@ -651,8 +654,7 @@ void WatchyGSR::init(String datetime){
 
               if (GSRWiFi.Requests == 0 && GSRWiFi.Slow == 0 && !inBrownOut() && WatchyAPOn && !OTAUpdate){
                 switch (Menu.SubItem){
-                  case 0: // Turn off AP.
-                    OTAEnd = true;
+                  case 0: // The AP is now off.
                     break;
                   case 1: // Turn on AP.
                     if (WiFi.getMode() != WIFI_AP || (millis() - OTATimer > 4000 && OTATry < 3)){
@@ -669,6 +671,8 @@ void WatchyGSR::init(String datetime){
                       APLoop=millis();
                       GSRWiFi.Slow = 2;
                     }else Menu.SubItem = 0; // Fail, something is amiss.
+                    break;
+                  case 5:  // SoftAP waiting to go off.
                     break;
                   default: // 2 to 5 is here.
                     if (Menu.SubItem > 1){
@@ -764,6 +768,7 @@ void WatchyGSR::StartWeb(){
     server.on("/exit", HTTP_GET, [=]() {
       server.sendHeader("Connection", "close");
       server.send(200, "text/html", LGSR.LangString(basicIndexDone,true,Options.LanguageID,1,21));
+      if (WatchyAPOn && Menu.Item == GSR_MENU_WIFI) { Menu.SubItem = 5; UpdateDisp |= Showing(); }
       ResetOTA(); EndOTA(3);
     });
     server.on("/settings", HTTP_POST, [=](){
@@ -1293,6 +1298,8 @@ void WatchyGSR::drawMenu(){
             O = WiFi.softAPIP().toString();
         }else if (Menu.SubItem == 4){
             O = LGSR.GetID(Options.LanguageID,99);
+        }else if (Menu.SubItem == 5){
+            O = LGSR.GetID(Options.LanguageID,130);
         }
     }else if (Menu.Item == GSR_MENU_OTAU || Menu.Item == GSR_MENU_OTAM){  // OTA Update.
         if (Menu.SubItem == 0){
@@ -1549,7 +1556,7 @@ uint8_t P = SRTC.getADCPin();
 void WatchyGSR::detectBattery(){
     float CBAT, BATOff, Diff, Uping;
     uint8_t Mins;
-    bool R = false, B = false;
+    bool R = false, B = false, S = false;
     if (Battery.LastTest > WatchTime.UTC_RAW) return;
     CBAT = getBatteryVoltage(); // Check battery against previous versions to determine which direction the battery is going.
     Diff = (WatchTime.UTC_RAW - Battery.LastTest) / 60;
@@ -1562,15 +1569,16 @@ void WatchyGSR::detectBattery(){
     else if (BATOff > 0.1) { Battery.Level = 3; R = true; }                                  /* Battery sees a massive jump due to it being plugged in */
     else if (BATOff >= Uping) { Battery.Level = golow(Battery.Level + Mins, 3); R = true; }  /* Jump up to 3 for charging */
     if (Battery.Level > 2){
-        Battery.Last = CBAT;
+        S = !(WatchyAPOn || OTAUpdate || GSRWiFi.Requests > 0);
         Battery.Direction = 1;
         // Check if the NTP has been done.
         B =(WatchTime.UTC_RAW - NTPData.Last > 14400);
     }else if (Battery.Level < 0){
-        Battery.Last = CBAT;
+        S = !(WatchyAPOn || OTAUpdate || GSRWiFi.Requests > 0);
         Battery.Direction = -1;
     }
     if (R) Battery.LastTest = WatchTime.UTC_RAW - WatchTime.UTC.Second;  /* Adds to the minute */
+    if (S) Battery.Last = CBAT; // Store it here.
     if (!SRTC.checkingDrift(WatchTime.ESPRTC)) B |= (WatchTime.Local.Hour == NTPData.SyncHour && WatchTime.Local.Minute == NTPData.SyncMins && NTPData.AutoSync && WatchTime.UTC_RAW - NTPData.Last > 59);
 
     Mins = Battery.State; /* Set update for display if the battery state changes */
@@ -2259,6 +2267,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               }else if (Menu.Item == GSR_MENU_WIFI && !WatchyAPOn){  // Watchy Connect
                   Menu.SubItem++;
                   WatchyAPOn = true;
+                  ResetEndOTA();
                   DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
@@ -2417,10 +2426,13 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               UpdateDisp = true;  // Quick Update.
               SetTurbo();
           }else if (Menu.Item == GSR_MENU_WIFI && Menu.SubItem > 0){
-              Menu.SubItem = 0;
-              DoHaptic = true;
-              UpdateDisp = true;  // Quick Update.
-              SetTurbo();
+              if (Menu.SubItem < 5){
+                  EndOTA(3);
+                  Menu.SubItem = 5;
+                  DoHaptic = true;
+                  UpdateDisp = true;  // Quick Update.
+                  SetTurbo();
+              }
           }else if ((Menu.Item == GSR_MENU_OTAU || Menu.Item == GSR_MENU_OTAM) && Menu.SubItem > 0){
               break;    // DO NOTHING!
           }else if (Menu.Style == GSR_MENU_INALARMS){  // Alarms
