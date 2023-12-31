@@ -121,9 +121,13 @@ Functions available for communication:
 | AddWatchStyle(String StyleName **\[, CLASS OBJECT\]**, bool IsGame == false) | Will return the Index of the added Watch Style (255 = error), 30 character max limit on Watch Style name.  **CLASS OBJECT:** This is [REQUIRED] inside RegisterWatchFaces() within an AddOn. Simply pass `this` as a **CLASS OBJECT**.  Do **NOT** include a CLASS OBJECT when calling from GSR.ino.  **OPTIONAL:** Now offers saying **true** to "IsGame" to register the Addon as a game. |
 | NoMenu() | This returns `true` if the Menu **isn't** open. |
 | getAngle(uint16_t Angle, uint8_t Width, uint8_t Height, uint8_t &X, uint8_t &Y) | Give it an Angle, Width and Height, X and Y will have those values, useful for Analog displays |
-| CurrentSteps() | Will return a uint32_t value of the current steps taken.  Do not access the SBMA directly as the base code now keeps a recording of them prior to restarts and each minute, so reboots don't lose progress. |
-| YesterdaySteps() | Will return a uint32_t value of yesterday's steps taken. |
+| CurrentSteps(bool Yesterday = **{false}**) | Will return a string formatted with today's steps and optionally (yesterday's).
+| CurrentStepsCount() | Will return a uint32_t value of the current steps taken.  Do not access the SBMA directly as the base code now keeps a recording of them prior to restarts and each minute, so reboots don't lose progress. |
+| YesterdaySteps() | Will return a string formatted with yesterday's steps taken. |
+| YesterdayStepsCount() | Will return a uint32_t value of yesterday's steps taken. |
 | CurrentSteps(bool Yesterday = false) | Returns a formatted string of CurrentSteps optionally **{true}** with (Yesterday's) steps added. |
+| BMAAvailable() | Returns **{true}** if the BMA is available for usage.  If not available, don't display steps or BMATemperature. |
+| BMATemperature(bool Metric = **{true}**) | Returns a float value of the BMA's temperature sensor, -1 if the BMA isn't available. |
 | void SetWeatherScale(bool Metric) | Set temperature & wind scale being used, **{Imperial}** or Metric.  Weather settings are not specific to any WatchFace. |
 | bool IsWeatherAvailable() | Returns **true** if there is available Weather Data. |
 | int GetWeatherTemperature() | Gets the current Temperature in the requested Scale. |
