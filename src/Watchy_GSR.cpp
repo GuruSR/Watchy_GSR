@@ -3248,6 +3248,10 @@ bool WatchyGSR::BMAAvailable(){
     return false;
 #endif  
 }
+float WatchyGSR::BMATemperature(bool Metric){
+    if (BMAAvailable()) return (Metric ? SBMA.readTemperature() : SBMA.readTemperatureF());
+    return -1;
+}
 String WatchyGSR::CurrentWatchStyle(){
     uint8_t X;
     char O[32];
