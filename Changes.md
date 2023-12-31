@@ -215,3 +215,5 @@
 - **FIX:**  Fixed Watchy Connect to have no password to avoid TKIP connection issues (use with caution, recommend lowering WiFi transmission power to 7db and move it close to your device).
 - **FIX:**  Fixed Watchy Connect Menu option, pressing BACK now will tell you to WAIT.  The OTA Website will also do the same thing.  3 seconds later, you will be properly out.
 - **FIX:**  Battery Detection was incorrectly saving state during WiFi usage and would either say it was charging incorrectly, but will still show LOW battery.
+- **ADD:**  AddOn functions BMAAvailable() and BMATemperature(bool Metric) to allow AddOns access to tell if the BMA was compiled in or not and access to the temperature sensor.
+- **FIX:**  Override Information was lacking changes and now reflects the correct function list.
