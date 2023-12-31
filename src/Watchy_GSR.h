@@ -110,6 +110,7 @@ class WatchyGSR{
         virtual String YesterdaySteps() final;
         virtual uint32_t YesterdayStepCount() final;
         virtual bool BMAAvailable() final;
+        virtual float BMATemperature(bool Metric = true) final;
         virtual String CurrentWatchStyle() final;
         virtual String CurrentGameStyle() final;
         virtual void AllowDefaultWatchStyles(bool Allow = true) final;
