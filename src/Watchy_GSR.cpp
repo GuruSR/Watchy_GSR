@@ -3249,7 +3249,9 @@ bool WatchyGSR::BMAAvailable(){
 #endif  
 }
 float WatchyGSR::BMATemperature(bool Metric){
+#ifdef STABLEBMA_H_INCLUDED
     if (BMAAvailable()) return (Metric ? SBMA.readTemperature() : SBMA.readTemperatureF());
+#endif  
     return -1;
 }
 String WatchyGSR::CurrentWatchStyle(){
