@@ -15,6 +15,7 @@
 #define WiFi_AP_MAXC 4      // Maximum user connections (default is 4).
 #define WiFi_SSID_MAX 32    // Do not change these two values.
 #define WiFi_PASS_MAX 63
+#define WiFi_CONNECTION_TIMEOUT 2000
 // Use instead of Watchy Connect (if necessary)
 #define WiFi_DEF_SSID ""
 #define WiFi_DEF_PASS ""

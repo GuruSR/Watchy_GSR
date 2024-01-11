@@ -3717,11 +3717,13 @@ void WatchyGSR::processWiFiRequest(){
                     GSRWiFi.Tried = true;
                     GSRWiFi.Slow = 2;
                     if (WiFi_DEF_SSID > ""){
-                        WiFiE = WiFi.begin(WiFi_DEF_SSID,WiFi_DEF_PASS);
+                        WiFi.begin(WiFi_DEF_SSID,WiFi_DEF_PASS);
+                        WiFiE = (wl_status_t) WiFi.waitForConnectResult(WiFi_CONNECTION_TIMEOUT);
                         UpdateWiFiPower(WiFi_DEF_SSID,WiFi_DEF_PASS);
                         setStatus(WiFiIndicator(GSRWiFi.Index ? GSRWiFi.Index : 24) + "!");
                     }else{
-                        WiFiE = WiFi.begin();
+                        WiFi.begin();
+                        WiFiE = (wl_status_t) WiFi.waitForConnectResult(WiFi_CONNECTION_TIMEOUT);
                         esp_wifi_get_config((wifi_interface_t)WIFI_IF_STA, &conf);
                         UpdateWiFiPower(reinterpret_cast<const char*>(conf.sta.ssid),reinterpret_cast<const char*>(conf.sta.password));
                         setStatus(WiFiIndicator(GSRWiFi.Index ? GSRWiFi.Index : 24) + "!");
@@ -3733,7 +3735,8 @@ void WatchyGSR::processWiFiRequest(){
                     AP = APIDtoString(GSRWiFi.Index - 1); PA = PASStoString(GSRWiFi.Index - 1);
                     if (AP.length() > 0){
                         GSRWiFi.Tried = true;
-                        WiFiE = WiFi.begin(AP.c_str(),PA.c_str());
+                        WiFi.begin(AP.c_str(),PA.c_str());
+                        WiFiE = (wl_status_t) WiFi.waitForConnectResult(WiFi_CONNECTION_TIMEOUT);
                         setStatus(WiFiIndicator(GSRWiFi.Index ? GSRWiFi.Index : 24) + "!");
                         UpdateWiFiPower(GSRWiFi.AP[GSRWiFi.Index].TPWRIndex);
                         GSRWiFi.Last = millis() + 9000;
@@ -3745,18 +3748,9 @@ void WatchyGSR::processWiFiRequest(){
 }
 
 String WatchyGSR::WiFiIndicator(uint8_t Index){
-    unsigned char O[7];
-    String S;
+    String S = "WiFi-";
+    S += (char) ('A' + (Index-1)); // Index 1: 'A', Index 2: 'B', ..., Index 24: 'X'
 
-    O[0] = 87;
-    O[1] = 105;
-    O[2] = 70;
-    O[3] = 105;
-    O[4] = 45;
-    O[5] = (64 + Index);
-    O[6] = 0;
-
-    S = reinterpret_cast<const char *>(O);
     return S;
 }
 
