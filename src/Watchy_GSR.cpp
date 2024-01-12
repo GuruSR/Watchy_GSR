@@ -596,7 +596,8 @@ void WatchyGSR::init(String datetime){
                   case 1: // Wait for WiFi to connect or fail.
                     if (!GetAskWiFi()) AskForWiFi();
                     else if (WiFiStatus() != WL_CONNECTED && currentWiFi() != WL_CONNECT_FAILED) OTATimer = millis();
-                    else if (WiFiStatus() == WL_CONNECTED){
+                    else if (HasIPAddress()){
+                      setStatus(WiFiIndicator(GSRWiFi.Index ? GSRWiFi.Index : 24));
                       Menu.SubItem++;
                       UpdateDisp |= Showing();
                     }else if (!WiFiInProgress()) OTAEnd=true;
@@ -3665,11 +3666,15 @@ void WatchyGSR::endWiFi(){
     }
 }
 
+bool WatchyGSR::HasIPAddress() {
+    if (WiFi.status() == WL_CONNECTED){ GSRWiFi.LocalIP = WiFi.localIP(); return !(GSRWiFi.LocalIP[0] == 0 || GSRWiFi.LocalIP[3] == 0 || (GSRWiFi.LocalIP[0] == 169 && GSRWiFi.LocalIP[1] == 254)); }
+    return false;
+}
+
 bool WatchyGSR::WiFiInProgress() { return (GSRWiFi.Requests > 0 && (GSRWiFi.Requested || GSRWiFi.Working || GSRWiFi.Results)); }
 
 void WatchyGSR::processWiFiRequest(){
     wl_status_t WiFiE = WL_CONNECT_FAILED;
-    wl_status_t rWiFi = WiFi.status();
     wifi_config_t conf;
     String AP, PA, O;
     uint8_t I;
@@ -3697,7 +3702,7 @@ void WatchyGSR::processWiFiRequest(){
     if (GSRWiFi.Working) {
         if (getButtonPins() != 2) OTATimer = millis(); // Not pressing "BACK".
         if (millis() - OTATimer > 10000 || millis() > OTAFail || IsEndOTA()) OTAEnd = true; // Fail if holding back for 10 seconds OR 600 seconds has passed.
-        if (rWiFi == WL_CONNECTED && GSRWiFi.Working) { GSRWiFi.Working = false; setStatus(WiFiIndicator(GSRWiFi.Index ? GSRWiFi.Index : 24)); GSRWiFi.Results = true; return; } // We got connected.
+        if (HasIPAddress && GSRWiFi.Working) { GSRWiFi.Working = false; setStatus(WiFiIndicator(GSRWiFi.Index ? GSRWiFi.Index : 24)); GSRWiFi.Results = true; return; } // We got connected.
         if (SoundHandle != NULL) return;  // Don't do this while the buzzer is on (trying to avoid brownouts).
         if (millis() > GSRWiFi.Last){
             RefreshCPU(GSR_CPUMAX);
@@ -3782,7 +3787,7 @@ void WatchyGSR::UpdateWiFiPower(uint8_t PWRIndex){
 
 wl_status_t WatchyGSR::currentWiFi(){
     if (!GetAskWiFi()) return WL_CONNECT_FAILED;
-    if (WiFiStatus() == WL_CONNECTED) return WL_CONNECTED;
+    if (HasIPAddress()) return WL_CONNECTED;
     if (GSRWiFi.Working) return WL_IDLE_STATUS;  // Make like it is relaxing doing nothing.
     return WL_CONNECT_FAILED;
 }
