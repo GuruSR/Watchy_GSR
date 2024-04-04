@@ -13,7 +13,7 @@ WatchFace Addons contains an EmptyAddOn.h (so you can use it as a template for m
 Needed libraries:  Arduino Libraries, ArduinoOTA (included in ESP32 2.0.2 and above), SmallRTC (2.3 or greater, GuruSR), SmallNTP (GuruSR), StableBMA (GuruSR), Olson2POSIX (GuruSR) AND Watchy (1.4.7 or greater) base.
 
 **NOTES:**
-- Watchy uses version 1.0.6 or *2.0.5* (or higher BUT not 3.x) of the ESP32 libraries, 2.0.0 won't compile, 2.0.3 and 2.0.4 causes a boot crash loop, 3.x causes compile failures, remove them manually and revert back to version 1.0.6 or use 2.0.14 (or higher, but not 3.x).
+- Watchy uses version 1.0.6 or *2.0.5* (or higher BUT not 3.x) of the ESP32 libraries, 2.0.0 won't compile, 2.0.3 and 2.0.4 causes a boot crash loop, 3.x causes compile failures, remove them manually and revert back to version 1.0.6 or use 2.0.13 (any higher requires ESP-IDF 4.4.6+, don't use 3.x).
 
 **WARNING:**
 As of Version 1.4.3H, the Compilation Instructions have changed, the GxEPD2 requires a define to be added to the .h file in the Compilation Instructions or the Dark Border will be disabled.
