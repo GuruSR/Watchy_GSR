@@ -34,7 +34,7 @@ class WatchyGSR{
         static SmallRTC SRTC;
         static SmallNTP SNTP;
         static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
-        static constexpr const char* Build = "1.4.7C2";
+        static constexpr const char* Build = "1.4.7D";
         enum DesOps {dSTATIC, dLEFT, dRIGHT, dCENTER};
 
     public:
@@ -168,6 +168,9 @@ class WatchyGSR{
         static bool inBrownOut();
         static void BrownOutDetect(bool On = false);
         void SetupESPValues();
+        static void StartSetup();
+        static uint16_t getDispCS();
+        void getPins(float Version);
         void ProcessNTP();
         void UpdateUTC();
         void UpdateClock();
@@ -237,6 +240,7 @@ class WatchyGSR{
         void RefreshCPU(int Value);
         void Reboot();
         bool OTA();
+        float rawBatteryVoltage();
         uint8_t getTXOffset(wifi_power_t Current);
         void DisplayInit(bool ForceDark = false);
         void DisplayWake(bool Tapped = false);

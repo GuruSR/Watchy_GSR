@@ -1,13 +1,6 @@
 #ifndef DEFINES_GSR_H
 #define DEFINES_GSR_H
 
-// GPIO
-#define GSR_GPIO_SEL_4   (BIT(4))                         /*!< Pin 4 selected */
-#define GSR_GPIO_SEL_25  (BIT(25))                        /*!< Pin 25 selected */
-#define GSR_GPIO_SEL_26  (BIT(26))                        /*!< Pin 26 selected */
-#define GSR_GPIO_SEL_32  ((uint64_t)(((uint64_t)1)<<32))  /*!< Pin 32 selected */
-#define GSR_GPIO_SEL_35  ((uint64_t)(((uint64_t)1)<<35))  /*!< Pin 35 selected */
-
 // WiFi
 #define WiFi_AP_SSID "Watchy Connect"
 #define WiFi_AP_PSWD ""     // Leave out so there is no encryption, be careful setting WiFi passwords in public with this.  This is done as some devices will refuse to connect via TKIP.
@@ -45,7 +38,7 @@
 // Color to tell system to use Auto foreground.
 #define GSR_AutoFore 0xC0C0
 
-// Menu offsets so I don't have to statically entere them everywhere.
+// Menu offsets so I don't have to statically enter them everywhere.
 #define GSR_MENU_STEPS 0
 #define GSR_MENU_ALARMS 1
 #define GSR_MENU_TIMERS 2
@@ -108,14 +101,6 @@
 #define GSR_NOS 4     // Used to stop the default status symbols from being printed (WiFi -> Alarms & Battery Charge).
 #define GSR_MOV 8     // True if override, but can be disabled *IF* held down for 10 seconds, it would not open the menu.
 #define GSR_GAM 16    // Set at startup for telling Watchy GSR that the AddOn is a game and not a watch face.
-
-//pins
-#define GSR_RTC_INT_PIN 27
-#define EPD_CS 5
-#define EPD_DC 10
-#define EPD_RESET 9
-#define EPD_BUSY 19
-#define GSR_VIB_MOTOR_PIN 13
 
 //SetCPU defines.
 #define GSR_CPUMAX 65280
