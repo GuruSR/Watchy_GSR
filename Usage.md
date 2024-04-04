@@ -28,7 +28,7 @@ This Watchy "face" contains the following heiarchy of options and settings:
 |                 | Information        | Shows the current Watchy_GSR Version and current Battery Voltage when you press "MENU". |
 | **Troubleshoot** |                    | See Menu below for more information. |
 |                 | WiFi Tx Power      | Allows the user to lower the default WiFi Transmission Power to save battery life during WiFi operations. |
-|                 | Sync Watchy        | Sync Watchy RTC by Time, TimeZone, TimeZone & Time, NTP Auto Sync (HH:MM). |
+|                 | Sync Watchy        | Sync Watchy RTC by Time, TimeZone, TimeZone & Time, NTP Auto Sync (HH:MM) + Day of Week in next menu. |
 |                 | Weather Settings   | (Only visible if Watchface asks for Weather) Set the interval between Weather requests, set the weather scale. |
 |                 | Watchy Connect     | Used to give the WiFi "X" credentials to Watchy.  "X" WiFi is the last "good" connected WiFi. "BACK" to immediately exit. |
 |                 | OTA Update         | Used with Arduino (and platformio) to upload a compile to Watchy via WiFi.  (ESCAPE by holding "BACK" for 10 seconds.) |
