@@ -217,3 +217,8 @@
 - **FIX:**  Battery Detection was incorrectly saving state during WiFi usage and would either say it was charging incorrectly, but will still show LOW battery.
 - **ADD:**  AddOn functions BMAAvailable() and BMATemperature(bool Metric) to allow AddOns access to tell if the BMA was compiled in or not and access to the temperature sensor.
 - **FIX:**  Override Information was lacking changes and now reflects the correct function list.
+
+**Version 1.4.7C:**
+- **FIX:**  Re-design of battery charge detection (hopefully this one works better).
+- **FIX:**  Compatibility with SmallRTC 2.3.4+.
+- **ADD:**  Day of week choice for NTP sync.  See Usage.md for how to use it.
