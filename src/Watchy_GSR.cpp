@@ -3870,11 +3870,13 @@ void WatchyGSR::processWiFiRequest(){
         }
         GSRWiFi.Working = true;
     }
-
-    if (GSRWiFi.Working) {
+    if (WiFiInProgress()) {
         if (getButtonPins() != 2) OTATimer = millis(); // Not pressing "BACK".
         if (millis() - OTATimer > 10000 || millis() > OTAFail || IsEndOTA()) OTAEnd = true; // Fail if holding back for 10 seconds OR 600 seconds has passed.
-        if (HasIPAddress() && GSRWiFi.Working) { GSRWiFi.Working = false; setStatus(WiFiIndicator(GSRWiFi.Index ? GSRWiFi.Index : 24)); GSRWiFi.Results = true; return; } // We got connected.
+    }
+
+    if (GSRWiFi.Working) {
+        if (HasIPAddress()) { GSRWiFi.Working = false; setStatus(WiFiIndicator(GSRWiFi.Index ? GSRWiFi.Index : 24)); GSRWiFi.Results = true; return; } // We got connected.
         if (SoundHandle != NULL) return;  // Don't do this while the buzzer is on (trying to avoid brownouts).
         if (millis() > GSRWiFi.Last){
             RefreshCPU(GSR_CPUMAX);
