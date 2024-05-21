@@ -824,7 +824,16 @@ void WatchyGSR::StartWeb(){
         String S = "";
         if (server.argName(0) == "weather") S = server.arg(0);
         server.sendHeader("Connection", "close"); ResetOTA();
-        if (S.length() == 32) { strncpy(&WeatherData.APIKey[0],S.c_str(),33); RecordSettings(); server.send(200, "text/html", LGSR.LangString(weatherDone,true,Options.LanguageID,1,21)); }
+        if (S.length() == 32) {
+           strncpy(&WeatherData.APIKey[0],S.c_str(),33);
+           RecordSettings();
+           server.send(200, "text/html", LGSR.LangString(weatherDone,true,Options.LanguageID,1,21)); 
+        } else {
+          String S = LGSR.LangString(weatherIndex,true,Options.LanguageID,6,17);
+          S.replace("{??}",String(WeatherData.APIKey));
+          server.sendHeader("Connection", "close");
+          server.send(200, "text/html", S);
+        }
     });
     server.on("/update", HTTP_POST, [=](){
       server.sendHeader("Connection", "close");
@@ -1526,7 +1535,10 @@ void WatchyGSR::deepSleep(){
   ForceInputs();
   if (!SRTC.OnESP32()) {
     if (GSR_PIN_RTC != 255) esp_sleep_enable_ext0_wakeup((gpio_num_t)GSR_PIN_RTC, 0); //enable deep sleep wake on RTC interrupt when not on internal RTC.
-    else esp_sleep_enable_ext0_wakeup((gpio_num_t)GSR_PIN_STAT, 1 - digitalRead(GSR_PIN_STAT)); // Make the V3 wake up when the Charge state changes.
+    else {
+       esp_sleep_enable_ext0_wakeup((gpio_num_t)GSR_PIN_STAT, 1 - digitalRead(GSR_PIN_STAT)); // Make the V3 wake up when the Charge state changes.
+       rtc_clk_32k_enable(true);
+    }
   }
 #ifdef STABLEBMA_H_INCLUDED
   esp_sleep_enable_ext1_wakeup((B ? SBMA.WakeMask() : 0) | GSR_BTN_MASK, ESP_EXT1_WAKEUP_ANY_HIGH); //enable deep sleep wake on button press  ... |ACC_INT_MASK
@@ -1747,10 +1759,6 @@ void WatchyGSR::getPins(float Version){
     GSR_MASK_ACC_INT = ((uint64_t)(((uint64_t)1)<<14)); //GPIO_SEL_14;
     GSR_PIN_ACC_INT2 = 12;
     GSR_PIN_VIB_PWM = 13;
-    GSR_MENU_MASK = ((uint64_t)(((uint64_t)1)<<26));    //GPIO_SEL_26;
-    GSR_BACK_MASK = ((uint64_t)(((uint64_t)1)<<25));    //GPIO_SEL_25;
-    GSR_UP_MASK = ((uint64_t)(((uint64_t)1)<<32));      //GPIO_SEL_32;
-    GSR_DOWN_MASK = ((uint64_t)(((uint64_t)1)<<4));     //GPIO_SEL_4;
     switch (V){
     case 15:
             GSR_PIN_ADC = 35;
@@ -1771,12 +1779,12 @@ void WatchyGSR::getPins(float Version){
             GSR_PIN_ACC_INT2 = 13;
             GSR_PIN_VIB_PWM = 17;
             GSR_PIN_USB_DET = 21;
-            GSR_MENU_MASK = ((uint64_t)(((uint64_t)1)<<7)); //GPIO_SEL_7;
-            GSR_BACK_MASK = ((uint64_t)(((uint64_t)1)<<6)); //GPIO_SEL_6;
-            GSR_UP_MASK = ((uint64_t)(((uint64_t)1)<<0));   //GPIO_SEL_0;
-            GSR_DOWN_MASK = ((uint64_t)(((uint64_t)1)<<8)); //GPIO_SEL_8;
         break;
     }
+    GSR_MENU_MASK = ((uint64_t)(((uint64_t)1)<<GSR_MENU_PIN));
+    GSR_BACK_MASK = ((uint64_t)(((uint64_t)1)<<GSR_BACK_PIN));
+    GSR_UP_MASK = ((uint64_t)(((uint64_t)1)<<GSR_UP_PIN));
+    GSR_DOWN_MASK = ((uint64_t)(((uint64_t)1)<<GSR_DOWN_PIN));
     GSR_BTN_MASK = GSR_MENU_MASK | GSR_BACK_MASK | GSR_UP_MASK | GSR_DOWN_MASK;
 }
 
@@ -3783,7 +3791,8 @@ void WatchyGSR::CheckButtons(){
     if (!UpdateDisp && B && (LastButton == 0 || (millis() - LastButton) > Debounce()) && Missed == 0 && Button == 0) Button = B;
 }
 
-uint8_t WatchyGSR::getButtonPins(){ return getSWValue((digitalRead(GSR_MENU_PIN) == 1), (digitalRead(GSR_BACK_PIN) == 1), (digitalRead(GSR_UP_PIN) == 1), (digitalRead(GSR_DOWN_PIN) == 1)); }
+uint8_t WatchyGSR::buttonHeld() { return (HWVer == 3 ? 0 : 1); }
+uint8_t WatchyGSR::getButtonPins(){ return getSWValue((digitalRead(GSR_MENU_PIN) == buttonHeld()), (digitalRead(GSR_BACK_PIN) == buttonHeld()), (digitalRead(GSR_UP_PIN) == buttonHeld()), (digitalRead(GSR_DOWN_PIN) == buttonHeld())); }
 
 uint8_t WatchyGSR::getButtonMaskToID(uint64_t HW){
     uint8_t HB = getSWValue((HW & GSR_MENU_MASK), (HW & GSR_BACK_MASK), (HW & GSR_UP_MASK), (HW & GSR_DOWN_MASK));
@@ -3870,6 +3879,7 @@ void WatchyGSR::processWiFiRequest(){
         }
         GSRWiFi.Working = true;
     }
+
     if (WiFiInProgress()) {
         if (getButtonPins() != 2) OTATimer = millis(); // Not pressing "BACK".
         if (millis() - OTATimer > 10000 || millis() > OTAFail || IsEndOTA()) OTAEnd = true; // Fail if holding back for 10 seconds OR 600 seconds has passed.

@@ -27,6 +27,7 @@
 #include "ArduinoNvs.h"
 #include <esp32-hal.h>
 #include "soc/soc.h"
+#include "soc/rtc.h"
 #include "soc/rtc_cntl_reg.h"
 
 class WatchyGSR{
@@ -34,7 +35,7 @@ class WatchyGSR{
         static SmallRTC SRTC;
         static SmallNTP SNTP;
         static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
-        static constexpr const char* Build = "1.4.7D";
+        static constexpr const char* Build = "1.4.7E";
         enum DesOps {dSTATIC, dLEFT, dRIGHT, dCENTER};
 
     public:
@@ -56,6 +57,7 @@ class WatchyGSR{
         virtual bool IsPM() final;
         virtual String GetLangWebID() final;
         virtual void CheckButtons() final;
+        static uint8_t buttonHeld();
         static uint8_t getButtonPins();
         void drawChargeMe(bool Dark = false);
         void drawStatus(bool Dark = false);
