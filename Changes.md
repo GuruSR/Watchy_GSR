@@ -218,7 +218,12 @@
 - **ADD:**  AddOn functions BMAAvailable() and BMATemperature(bool Metric) to allow AddOns access to tell if the BMA was compiled in or not and access to the temperature sensor.
 - **FIX:**  Override Information was lacking changes and now reflects the correct function list.
 
-**Version 1.4.7C:**
+**Version 1.4.7D:**
 - **FIX:**  Re-design of battery charge detection (hopefully this one works better).
 - **FIX:**  Compatibility with SmallRTC 2.3.4+.
 - **ADD:**  Day of week choice for NTP sync.  See Usage.md for how to use it.
+
+**Version 1.4.7E:**
+- **FIX:**  Fixed V2 UP button declaration for wakeup.
+- **FIX:**  Fixed OTA Website Weather section erroring on invalid length.
+- **ADD:**  New system for versioning of hardware.  No longer using pre-created macros as they're no longer up to date.
