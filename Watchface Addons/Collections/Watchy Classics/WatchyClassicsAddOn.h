@@ -14,7 +14,7 @@
  * 
  * Be sure to like the watch faces on their original Githubs to show the apprecation of the work done.
  */
-
+#include "WeatherIcons.h"
 
 // Function Declarations here:  If you have any custom functions you wish to use in this file, you must declare them here:
 
