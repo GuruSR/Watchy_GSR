@@ -1,8 +1,10 @@
+***For those with the new 2024 Watchy (V3), please read this TO THE END!***
+
 ![Watchy GSR Face](/Images/Watchy_GSR.gif)
 
 This repo's format:
 
-Bin folder contains the current OTA Bin that you can use a tool to upload with or an OTA Upgrade capable firmware to install the current OTA Bin to the Watchy.
+Bin folder contains the current OTA Bin (V1 to V2 ONLY) that you can use a tool to upload with or an OTA Upgrade capable firmware to install the current OTA Bin (V1 to V2 ONLY) to the Watchy.
 
 src folder contains a universal (Arduino & PlatformIO) setup for compilation, instructions on how to get it to compile are in the src folder.
 
@@ -13,9 +15,12 @@ WatchFace Addons contains an EmptyAddOn.h (so you can use it as a template for m
 Needed libraries:  Arduino Libraries, ArduinoOTA (included in ESP32 2.0.2 and above), SmallRTC (2.3 or greater, GuruSR), SmallNTP (GuruSR), StableBMA (GuruSR), Olson2POSIX (GuruSR) AND Watchy (1.4.7 or greater) base.
 
 **NOTES:**
-- Watchy uses version 1.0.6 or *2.0.5* (or higher BUT not 3.x) of the ESP32 libraries, 2.0.0 won't compile, 2.0.3 and 2.0.4 causes a boot crash loop, 3.x causes compile failures, remove them manually and revert back to version 1.0.6 or use 2.0.13 (any higher requires ESP-IDF 4.4.6+, don't use 3.x).
+- V1 to V2 Watchy: Watchy should use version 2.0.13 of the ESP32 libraries, 3.0.2 can be used but causes a much larger binary and requires ESP-IDF 5.1 or greater (which is a manual install).
 
 **WARNING:**
+
+**2024 V3 Watchy Owners**:  This firmware is *NOT* tested on your device, it *MAY* work, but I cannot test it as I do not have a V3 to test it with.  I have in as much capacity that I am capable of, set this up to work in the environment OF the new V3, but I cannot test it.  If you feel brave enough to do so, until I can actually physically test it on a V3, you can by all means do so.  Please see the Compilation Instructions for the specific notice for the V3.
+
 As of Version 1.4.3H, the Compilation Instructions have changed, the GxEPD2 requires a define to be added to the .h file in the Compilation Instructions or the Dark Border will be disabled.
 
 For instructions on usage of the firmware, see "Usage".
