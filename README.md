@@ -8,8 +8,6 @@ Bin folder contains the current OTA Bin (V1 to V2 ONLY) that you can use a tool 
 
 src folder contains a universal (Arduino & PlatformIO) setup for compilation, instructions on how to get it to compile are in the src folder.
 
-Release folder has a zip file containing the Watchy_GSR src files (only, no other files).
-
 WatchFace Addons contains an EmptyAddOn.h (so you can use it as a template for making your own), an EmptyGameAddOn.h as well as 2 stock Watchy_GSR WatchFaces (Ballsy & LCD).
 
 Needed libraries:  Arduino Libraries, ArduinoOTA (included in ESP32 2.0.2 and above), SmallRTC (2.3 or greater, GuruSR), SmallNTP (GuruSR), StableBMA (GuruSR), Olson2POSIX (GuruSR) AND Watchy (1.4.7 or greater) base.
@@ -39,6 +37,8 @@ OTA update is **ONLY** possible via an OTA compatible firmware which are:
 For those wanting to override the looks of this Watchy face, look at the Override Information.
 
 **First Timers**
+
+V3:  For those with the 2024 V3 Watchy, see the file in the main folder about it.
 
 To get this setup for compiling, you need to make a folder in your (Arduino) Stream folder or (PlatformIO) project folder, call it GSR, in there, download the "Starting Point.zip" and latest Release (Source Code) .zip from the Release folder above.
 Extract both "Starting Point.zip" and the latest release (Source Code .zip) into the GSR folder, this will ensure all the necessary files are there.  If you plan to download any AddOns, be sure to deposit those files into the same GSR folder.  Follow the instructions for including AddOns in the src folder's Compilation Instructions.
