@@ -25,17 +25,13 @@
 #include "Fonts_GSR.h"
 #include "Icons_GSR.h"
 #include "ArduinoNvs.h"
-#include <esp32-hal.h>
-#include "soc/soc.h"
-#include "soc/rtc.h"
-#include "soc/rtc_cntl_reg.h"
 
 class WatchyGSR{
     public:
         static SmallRTC SRTC;
         static SmallNTP SNTP;
         static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
-        static constexpr const char* Build = "1.4.7E";
+        static constexpr const char* Build = "1.4.7F";
         enum DesOps {dSTATIC, dLEFT, dRIGHT, dCENTER};
 
     public:
@@ -136,7 +132,6 @@ class WatchyGSR{
         virtual void SetWeatherScale(bool Metric) final;
         virtual bool IsMetric() final;
         virtual int GetWeatherID() final;
-        virtual String GetWeatherIcon() final;
         virtual uint8_t GetWeatherHumidity() final;
         virtual uint8_t GetWeatherClouds() final;
         virtual time_t GetWeatherSunRise() final;
@@ -159,6 +154,7 @@ class WatchyGSR{
         virtual void initAddOn(WatchyGSR *NewAddon) final;
         virtual void setFontColor(uint16_t Color) final;
         virtual tmElements_t UTCtoLocal(time_t Incoming) final;
+        virtual time_t getISO8601(String inTime) final;
    private:
         void setStatus(String Status);
         void drawMenu();
@@ -171,7 +167,11 @@ class WatchyGSR{
         static void BrownOutDetect(bool On = false);
         void SetupESPValues();
         static void StartSetup();
+        static bool isESP32S3();
         static uint16_t getDispCS();
+        static uint16_t getDispDC();
+        static uint16_t getDispRES();
+        static uint16_t getDispBSY();
         void getPins(float Version);
         void ProcessNTP();
         void UpdateUTC();
@@ -248,6 +248,7 @@ class WatchyGSR{
         void DisplayWake(bool Tapped = false);
         void DisplaySleep();
         void ProcessWeather();
+        String makeGeo(String inGeo, bool isLat);
         static void GSRWebGet(void * parameter);
         void WatchFaceStart(uint8_t NewFace, bool NoEndWiFi = false);
         bool ChangeGame(bool Up = true);

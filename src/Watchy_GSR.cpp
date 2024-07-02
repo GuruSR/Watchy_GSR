@@ -16,6 +16,7 @@ const float Reduce[5] = {1.0,0.8,0.6,0.4,0.2};
 #define GName "GSR"
 #define GSettings "GSR-Options"
 #define GTZ "GSR-TZ"
+#define Bugh "GSR-Bugh"
 #define STP "Steps"
 #define YSTP "YSteps"
 // Protected
@@ -113,14 +114,10 @@ RTC_DATA_ATTR uint8_t  GSR_PIN_ACC_INT1 = 0;
 RTC_DATA_ATTR uint8_t  GSR_PIN_ACC_INT2 = 0;
 RTC_DATA_ATTR uint8_t  GSR_PIN_VIB_PWM = 0;
 RTC_DATA_ATTR uint8_t  GSR_PIN_USB_DET = 255;
-RTC_DATA_ATTR uint16_t GSR_PIN_CS = 0;
-RTC_DATA_ATTR uint16_t GSR_PIN_DC = 0;
-RTC_DATA_ATTR uint16_t GSR_PIN_RES = 0;
-RTC_DATA_ATTR uint16_t GSR_PIN_BUSY = 0;
-RTC_DATA_ATTR uint8_t  GSR_PIN_SCK = 0;
-RTC_DATA_ATTR uint8_t  GSR_PIN_MISO = 0;
-RTC_DATA_ATTR uint8_t  GSR_PIN_MOSI = 0;
-RTC_DATA_ATTR uint8_t  GSR_PIN_SS = 0;
+RTC_DATA_ATTR uint8_t  GSR_PIN_SCK = 255;
+RTC_DATA_ATTR uint8_t  GSR_PIN_MISO = 255;
+RTC_DATA_ATTR uint8_t  GSR_PIN_MOSI = 255;
+RTC_DATA_ATTR uint8_t  GSR_PIN_SS = 255;
 RTC_DATA_ATTR uint8_t  GSR_PIN_RTC = 255;
 RTC_DATA_ATTR uint64_t GSR_BTN_MASK;
 RTC_DATA_ATTR uint64_t GSR_MENU_MASK;
@@ -128,6 +125,7 @@ RTC_DATA_ATTR uint64_t GSR_BACK_MASK;
 RTC_DATA_ATTR uint64_t GSR_UP_MASK;
 RTC_DATA_ATTR uint64_t GSR_DOWN_MASK;
 RTC_DATA_ATTR uint64_t GSR_MASK_ACC_INT;
+RTC_DATA_ATTR uint64_t GSR_ESP_WAKEUP = 0; // 1 for v1-2, 0 for v3.
 
 RTC_DATA_ATTR struct Countdown final {
   bool Active;
@@ -166,6 +164,10 @@ RTC_DATA_ATTR struct BatteryUse final {
     time_t LastState;       // Used to marshall the battery indicator for 10 second intervals to avoid Active Mode abuse.
     float Start;            // Used at the start of Init to catch brownouts.
     uint32_t ADCPin;        // Here for static use.
+    float Divider;          // Divider for battery.
+    float Divider2;         // For formatted battery.
+    bool Ugh;               // 3rd party.
+    int8_t CState;
     struct {
         time_t Stamp;       // Timestamp for the current Voltage below.
         float Voltage;      // Voltage of that current Stamp.
@@ -178,6 +180,7 @@ RTC_DATA_ATTR struct NTPUse final {
     uint8_t State;          // State = 0=Off, 1=Start WiFi, 2=Wait for WiFi, TZ, send NTP request, etc, Finish.  See function ProcessNTP();
     uint8_t Wait;           // Counts up to 3 minutes, then fails.
     uint8_t Pause;          // How many 50ms to pause for.
+    unsigned long tWait;    // Used to Only wait X seconds for a response.
     time_t Last;            // Last time it worked.
     bool TimeZone;          // Update Timezone during ProcessNTP.
     bool UpdateUTC;         // Update UTC during ProcessNTP.
@@ -222,29 +225,30 @@ RTC_DATA_ATTR struct WeatherGSR final {
    uint8_t State;          /* Like NTP State 0 = idle, 1 = asking for WiFi, 2 = asking for code, 3 = got code or error. */
    uint8_t Wait;           /* Counts up to 3 minutes, then fails. */
    uint8_t Pause;          /* How many 50ms to pause for. */
-   char APIKey[33];        /* Populated from NVS Storage, if empty, it will never ask for weather */
    struct Weatherinfo {
-     char Icon[4];         /* Icon ID from api.openweathermap.org */
-     uint16_t ID;          /* ID from api.openweathermap.org */
+     uint16_t ID;          /* ID from open-medeo.com */
      struct TempsGSR {
        float FeelsLike;    /* These are set to the Kelvin, when the function call (SetWeatherScale(Metric is true/Imperial is false)) */
        float Current;      /* is done, the functions for these will return the proper values based on the selected scale. */
      } Temperature;
-     uint8_t Humidity;     /* "humidity" from api.openweathermap.org */
-     uint8_t Clouds;       /* "clouds" from api.openweathermap.org */
-     uint16_t Pressure;    /* "pressure" from api.openweathermap.org */
-     time_t SunRise;       /* "sunrise" from api.openweathermap.org */
-     time_t SunSet;        /* "sunset" from api.openweathermap.org */
-     uint32_t Visibility;  /* "visibility" from api.openweathermap.org */
-     float WindSpeed;      /* "wind" "speed" from api.openweathermap.org */
-     int WindDirection;    /* "wind" "deg" from api.openweatherap.org */
-     float WindGust;       /* "wind" "gust" from api.openweathermap.org */
+     uint8_t Humidity;     /* "humidity" from open-medeo.com */
+     uint8_t Clouds;       /* "clouds" from open-medeo.com */
+     uint16_t Pressure;    /* "pressure" from open-medeo.com */
+     time_t SunRise;       /* "sunrise" from open-medeo.com */
+     time_t SunSet;        /* "sunset" from open-medeo.com */
+     uint32_t Visibility;  /* "visibility" from open-medeo.com */
+     float WindSpeed;      /* "wind" "speed" from open-medeo.com */
+     int WindDirection;    /* "wind" "deg" from open-medeo.com */
+     float WindGust;       /* "wind" "gust" from open-medeo.com */
    } Weather;
-   time_t LastCall;        /* Last call to api.openweathermap.org + Honor ## minute delay */
-   double LastLon;         /* Last Longitude ^^^ */
+   time_t LastCall;        /* Last call to open-medeo.com + Honor ## minute delay */
    double LastLat;         /* Last Latitude  ^^^ */
+   double LastLon;         /* Last Longitude ^^^ */
+   double StaticLat;       /* Static Latitude  from OTA Website */
+   double StaticLon;       /* Static Longitude from OTA Website */
+   bool UseStaticPOS;      /* Use the above 2 values */
    uint8_t Interval;       /* Interval between checks * 5 */
-} WeatherData; /* COD 401 is bad APIKEY, if bad key happens, APIKey will be erased. */
+} WeatherData; /* COD 'error' means something is amiss. */
 
 RTC_DATA_ATTR struct webGSR final {
   uint8_t Ready;          /* Data is ready for reading */
@@ -262,7 +266,7 @@ RTC_DATA_ATTR TimeData WatchTime;
 RTC_DATA_ATTR StableBMA SBMA;
 #endif
 RTC_DATA_ATTR LocaleGSR LGSR;
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> WatchyGSR::display(GxEPD2_154_D67(WatchyGSR::getDispCS(), GSR_PIN_DC, GSR_PIN_RES, GSR_PIN_BUSY));
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> WatchyGSR::display(GxEPD2_154_D67(WatchyGSR::getDispCS(), WatchyGSR::getDispDC(), WatchyGSR::getDispRES(), WatchyGSR::getDispBSY()));
 RTC_DATA_ATTR WatchyGSR *MonitorTo;
 
 volatile uint8_t Button;
@@ -290,6 +294,7 @@ bool OTAUpdate;    // Internet based OTA Update.
 bool AlarmReset;   // Moved out here to work with Active Mode.
 bool Alarming;     // Means an alarm has triggered.
 bool OTAEnd;       // Means somewhere, it wants this to end, so end it.
+bool OTAAsked;     // OTA Website/Update asked for WiFi (this gets rid of the loop).
 int OTATry;        // Tries to connect to WiFi.
 bool DoHaptic;     // Want it to happen after screen update.
 bool UpdateDisp;   // Display needs to be updated.
@@ -356,6 +361,7 @@ void WatchyGSR::init(String datetime){
     Alarming = false;
     OTAUpdate = false;
     OTAEnd = false;
+    OTAAsked = false;
     WatchyAPOn = false;
     AlarmReset = false;
     AlarmsOn = false;
@@ -378,11 +384,11 @@ void WatchyGSR::init(String datetime){
     KeysHandle = NULL;
     KeysCheckOn = false;
     CPUSet.Freq=getCpuFrequencyMhz();
-
     switch (wakeup_reason)
     {
         case ESP_SLEEP_WAKEUP_EXT0: //RTC Alarm & V3 Charge indicator
         case ESP_SLEEP_WAKEUP_TIMER: // Internal RTC Alarm
+
             RefreshCPU(GSR_CPUDEF);
             BrownOutDetect();
 #ifndef SMALL_RTC3_H
@@ -428,18 +434,6 @@ void WatchyGSR::init(String datetime){
             Battery.RadioLevel = Battery.LowLevel + 0.1;
             HWVer = SRTC.getWatchyHWVer();
             getPins(HWVer);
-/*
-            GSR_MENU_PIN = 26;
-            GSR_MENU_MASK = GSR_GPIO_SEL_26;
-            GSR_BACK_PIN = 25;
-            GSR_BACK_MASK = GSR_GPIO_SEL_25;
-            GSR_UP_PIN = 32;
-            GSR_UP_MASK = GSR_GPIO_SEL_32;
-            GSR_DOWN_PIN = 4;
-            GSR_DOWN_MASK = GSR_GPIO_SEL_4;
-            if (SRTC.getType() == PCF8563){ if (HWVer == 1.5) { GSR_UP_PIN = 32; GSR_UP_MASK = GSR_GPIO_SEL_32; } else { GSR_UP_PIN = 35; GSR_UP_MASK = GSR_GPIO_SEL_35; } }
-            GSR_BTN_MASK = GSR_MENU_MASK|GSR_BACK_MASK|GSR_UP_MASK|GSR_DOWN_MASK;
-*/
             setupDefaults();
             _bmaConfig();
             Rebooted=true;
@@ -448,14 +442,17 @@ void WatchyGSR::init(String datetime){
             Battery.LastState = 0;
             Battery.FloatBottom = 0;
             Battery.FloatTop = 4;
-            for (I = 0; I++; I < 5){
-              Battery.ReadFloat[I].Voltage = getBatteryVoltage();
-              Battery.ReadFloat[I].Stamp = WatchTime.UTC_RAW - WatchTime.UTC.Second;
-            }
+            if (OkNVS(GName)){ B = NVS.getString(Bugh,S); Battery.Ugh = (S > ""); }
+            Battery.Divider = (HWVer == 3.0 ? 1.296f : 5.0f);
+            Battery.Divider2 = (HWVer == 3.0 ? 129.6f : 500.0f);
             Battery.State = 0;
             Battery.DarkState = 0;
             Battery.Direction = -1;
             Battery.DarkDirection = 0;
+            for (I = 0; I < 5; I++){
+              Battery.ReadFloat[I].Voltage = rawBatteryVoltage();
+              Battery.ReadFloat[I].Stamp = WatchTime.UTC_RAW - WatchTime.UTC.Second;
+            }
             if (DefaultWatchStyles){
                 I = AddWatchStyle("{%0%}"); // Classic GSR
                 BasicWatchStyles = I;
@@ -608,6 +605,7 @@ void WatchyGSR::init(String datetime){
                 if (WatchyAPOn) server.stop();
                 VibeTo(false);
                 OTAEnd=false;
+                OTAAsked=false;
                 endWiFi();
                 if (Menu.Item == GSR_MENU_WIFI && Menu.SubItem > 0) Menu.SubItem = 0;
                 if (OTAUpdate) Menu.SubItem=0;
@@ -617,7 +615,7 @@ void WatchyGSR::init(String datetime){
                 setStatus("");
                 UpdateDisp |= Showing() | WatchyAPOn;
                 WatchyAPOn = false;
-                //Battery.Level=0;  // Stop it from thinking the battery went wild.
+                if (Options.NeedsSaving) RecordSettings();
                 Missed = 0; Button = 0;
               }
 
@@ -626,7 +624,7 @@ void WatchyGSR::init(String datetime){
               if (OTAUpdate && !UpdateDisp && GSRWiFi.Slow == 0 && !inBrownOut()){
                 switch (Menu.SubItem){
                   case 1: // Wait for WiFi to connect or fail.
-                    if (!GetAskWiFi()) AskForWiFi();
+                    if (!GetAskWiFi() && !OTAAsked) { AskForWiFi(); OTAAsked = true; }
                     else if (WiFiStatus() != WL_CONNECTED && currentWiFi() != WL_CONNECT_FAILED) OTATimer = millis();
                     else if (HasIPAddress()){
                       setStatus(WiFiIndicator(GSRWiFi.Index ? GSRWiFi.Index : 24));
@@ -719,7 +717,7 @@ void WatchyGSR::init(String datetime){
                         break;
                       }*/
                       if (millis() - APLoop > 8000){
-                        Menu.SubItem = roller(Menu.SubItem + 1, 2,4);
+                        Menu.SubItem = roller(Menu.SubItem + 1, 2, 4);
                         UpdateDisp |= Showing();
                         APLoop=millis();
                       }
@@ -784,8 +782,11 @@ void WatchyGSR::StartWeb(){
       }
     });
     server.on("/weather", HTTP_GET, [=]() {
-      String S = LGSR.LangString(weatherIndex,true,Options.LanguageID,6,17);
-      S.replace("{??}",String(WeatherData.APIKey));
+      String S = LGSR.LangString(weatherIndex,true,Options.LanguageID,6,23);
+      String T = (WeatherData.UseStaticPOS ? makeGeo(String(WeatherData.StaticLat,6),true) : "");
+      S.replace("{%1%}",T);
+      T = (WeatherData.UseStaticPOS ? makeGeo(String(WeatherData.StaticLon,6),false) : "");
+      S.replace("{%2%}",T);
       server.sendHeader("Connection", "close");
       server.send(200, "text/html", S);
       ResetOTA();
@@ -805,7 +806,7 @@ void WatchyGSR::StartWeb(){
       ResetOTA(); EndOTA(3);
     });
     server.on("/settings", HTTP_POST, [=](){
-        if (server.argName(0) == "settings") { StoreSettings(server.arg(0)); if (Options.WatchFaceStyle > WatchStyles.Count - 1) Options.WatchFaceStyle = 0; RecordSettings(); WatchFaceStart(Options.WatchFaceStyle, true); }
+        if (server.argName(0) == "settings") { StoreSettings(server.arg(0)); if (Options.WatchFaceStyle > WatchStyles.Count - 1) Options.WatchFaceStyle = 0; Options.NeedsSaving = true ; WatchFaceStart(Options.WatchFaceStyle, true); }
         server.sendHeader("Connection", "close");
         server.send(200, "text/html", LGSR.LangString(settingsDone,true,Options.LanguageID,5,19));
         ResetOTA();
@@ -817,23 +818,26 @@ void WatchyGSR::StartWeb(){
         }
         server.sendHeader("Connection", "close");
         server.send(200, "text/html", LGSR.LangString(wifiDone,true,Options.LanguageID,14,19));
-        RecordSettings();
+        Options.NeedsSaving = true;
         ResetOTA();
     });
     server.on("/weather", HTTP_POST, [=](){
-        String S = "";
-        if (server.argName(0) == "weather") S = server.arg(0);
+        String S = ""; if (server.argName(0) == "lat") S = makeGeo(server.arg(0),true);
+        String T = ""; if (server.argName(1) == "lon") T = makeGeo(server.arg(1),false);
         server.sendHeader("Connection", "close"); ResetOTA();
-        if (S.length() == 32) {
-           strncpy(&WeatherData.APIKey[0],S.c_str(),33);
-           RecordSettings();
-           server.send(200, "text/html", LGSR.LangString(weatherDone,true,Options.LanguageID,1,21)); 
-        } else {
-          String S = LGSR.LangString(weatherIndex,true,Options.LanguageID,6,17);
-          S.replace("{??}",String(WeatherData.APIKey));
-          server.sendHeader("Connection", "close");
-          server.send(200, "text/html", S);
+        WeatherData.UseStaticPOS = (T >"" && S > "");
+        if (WeatherData.UseStaticPOS)
+        {
+            WeatherData.StaticLat = S.toDouble();
+            WeatherData.StaticLon = T.toDouble();
         }
+        else
+        {
+            WeatherData.StaticLat = 0;
+            WeatherData.StaticLon = 0;
+        }
+        Options.NeedsSaving = true;
+        server.send(200, "text/html", LGSR.LangString(weatherDone,true,Options.LanguageID,1,21)); 
     });
     server.on("/update", HTTP_POST, [=](){
       server.sendHeader("Connection", "close");
@@ -868,6 +872,7 @@ bool WatchyGSR::IsEndOTA() { return (OTAOff > 0 && millis() > OTAOff); }
 void WatchyGSR::ResetEndOTA() { OTAOff = 0; }
 
 void WatchyGSR::showWatchFace(){
+  int I;
   bool B = (Battery.Read > Battery.MinLevel);
   if (Options.Performance && B) if (Options.Performance == 1) RefreshCPU(GSR_CPUMID); else if (Options.Performance == 2) RefreshCPU(GSR_CPULOW);
   if (Options.Feedback && DoHaptic && B && AllowHaptic) { HapticMS = 10; SoundBegin(); }
@@ -1279,7 +1284,7 @@ void WatchyGSR::drawMenu(){
                 break;
             case 2:
                 if (HWVer > 1.0) { if (HWVer == 3.0) O = "ESP32"; else O = (HWVer == 2.0) ? "V2.0 PCF8563" : "V1.5 PCF8563"; } else O = "V1 DS3231M";
-                if (HWVer != 3.0 && SRTC.OnESP32()) O += " ESP";
+                if (HWVer != 3.0 && SRTC.onESP32()) O += " ESP";
                 break;
         }
     }else if (Menu.Item == GSR_MENU_SAVE){  // Performance
@@ -1340,7 +1345,7 @@ void WatchyGSR::drawMenu(){
                 }
         }else if (Menu.SubItem == 3) O = LGSR.GetID(Options.LanguageID,(IsMetric() ? 125 : 126));
         else O = LGSR.GetID(Options.LanguageID,97);
-    }else if (Menu.Item == GSR_MENU_WIFI){ // Reset Steps.
+    }else if (Menu.Item == GSR_MENU_WIFI){ // WiFi Connect.
         if (Menu.SubItem == 0){
             O = LGSR.GetID(Options.LanguageID,97);
         }else if (Menu.SubItem == 1){
@@ -1521,7 +1526,7 @@ void WatchyGSR::deepSleep(){
       CT=localtime(&TimerDown.StopAt);
       if (CT->tm_hour == H && CT->tm_min < N && CT->tm_min > WatchTime.Local.Minute) N = CT->tm_min;
     }
-    if (String(WeatherData.APIKey) != "" && WeatherData.LastCall != 0 && GetWantWeather()){
+    if (WeatherData.LastCall != 0 && GetWantWeather()){
       CT=localtime(&WeatherData.LastCall);
       if (CT->tm_hour == H && CT->tm_min < N && CT->tm_min > WatchTime.Local.Minute) N = CT->tm_min;
     }
@@ -1533,17 +1538,13 @@ void WatchyGSR::deepSleep(){
   GoDark(M); DisplaySleep();
   if (DM) SRTC.atMinuteWake(N); else SRTC.nextMinuteWake();
   ForceInputs();
-  if (!SRTC.OnESP32()) {
-    if (GSR_PIN_RTC != 255) esp_sleep_enable_ext0_wakeup((gpio_num_t)GSR_PIN_RTC, 0); //enable deep sleep wake on RTC interrupt when not on internal RTC.
-    else {
-       esp_sleep_enable_ext0_wakeup((gpio_num_t)GSR_PIN_STAT, 1 - digitalRead(GSR_PIN_STAT)); // Make the V3 wake up when the Charge state changes.
-       rtc_clk_32k_enable(true);
-    }
+  if (!SRTC.onESP32() && GSR_PIN_RTC == 255) {
+    esp_sleep_enable_ext0_wakeup((gpio_num_t)GSR_PIN_STAT, 1 - digitalRead(GSR_PIN_STAT)); // Make the V3 wake up when the Charge state changes.
   }
 #ifdef STABLEBMA_H_INCLUDED
-  esp_sleep_enable_ext1_wakeup((B ? SBMA.WakeMask() : 0) | GSR_BTN_MASK, ESP_EXT1_WAKEUP_ANY_HIGH); //enable deep sleep wake on button press  ... |ACC_INT_MASK
+  esp_sleep_enable_ext1_wakeup((B ? SBMA.WakeMask() : 0) | GSR_BTN_MASK, (esp_sleep_ext1_wakeup_mode_t)GSR_ESP_WAKEUP); //enable deep sleep wake on button press  ... |ACC_INT_MASK
 #else
-  esp_sleep_enable_ext1_wakeup(GSR_BTN_MASK, ESP_EXT1_WAKEUP_ANY_HIGH); //enable deep sleep wake on button press  ... |ACC_INT_MASK
+  esp_sleep_enable_ext1_wakeup(GSR_BTN_MASK, (esp_sleep_ext1_wakeup_mode_t)GSR_ESP_WAKEUP); //enable deep sleep wake on button press  ... |ACC_INT_MASK
 #endif
   RefreshCPU(GSR_CPULOW);
   esp_deep_sleep_start();
@@ -1628,11 +1629,16 @@ void WatchyGSR::detectBattery(){
         Diff = (Battery.ReadFloat[Battery.FloatTop].Voltage - Battery.ReadFloat[Battery.FloatBottom].Voltage);
         BATOff = (round(Diff) * 100) / 100;
         if (Mins < 1) return; // No minute.
-        Uping = (Darkness.Went && Mins > 1 && Battery.ReadFloat[Battery.FloatTop].Voltage < 425.00) ? (Mins * 0.4) : 0.4;
-        if (BATOff < -10) Battery.Level = -2;                                  /* Battery sees a massive jump due to it being unplugged */
-        else if (BATOff < 0.00) Battery.Level = gobig(Battery.Level - 1, -2);  /* Drop down to -2 for discharging */
-        else if (BATOff > 10) Battery.Level = 2;                               /* Battery sees a massive jump due to it being plugged in */
-        else if (BATOff > Uping) Battery.Level = golow(Battery.Level + 1, 2);  /* Jump up to 3 for charging */
+        if (!Battery.Ugh){
+            Uping = (Darkness.Went && Mins > 1 && Battery.ReadFloat[Battery.FloatTop].Voltage < 425.00) ? (Mins * 0.4) : 0.4;
+            if (BATOff < -10) Battery.Level = -2;                                     /* Battery sees a massive jump due to it being unplugged */
+            else if (BATOff < 0.00) { Battery.Level = gobig(Battery.Level - 1, -2); } /* Drop down to -2 for discharging */
+            else if (BATOff > 10) Battery.Level = 2;                                 /* Battery sees a massive jump due to it being plugged in */
+            else if (BATOff > Uping) Battery.Level = golow(Battery.Level + 1, 2);    /* Jump up to 3 for charging */
+            if (Battery.ReadFloat[Battery.FloatTop].Voltage > 424 && Battery.ReadFloat[Battery.FloatBottom].Voltage > 424 && !Battery.Ugh) Battery.CState += gobig(Mins - 4, 1);
+            if (Battery.CState > 150 && !Battery.Ugh) { Battery.Ugh = true; if (OkNVS(GName)) { B = NVS.setString(Bugh,Bugh); NVS.commit(); } }
+            if (Battery.Ugh && Battery.Level > 0) Battery.Level = 0;
+        }
     }else Battery.Level = (digitalRead(GSR_PIN_STAT) == 1 ? 2 : -2);
     if (Battery.Level > 1){
         Battery.Direction = 1;
@@ -1709,41 +1715,42 @@ void WatchyGSR::SetupESPValues(){
     }
 }
 
+bool WatchyGSR::isESP32S3(){
+    esp_chip_info_t chip_info[sizeof(esp_chip_info_t)];
+    esp_chip_info(chip_info);
+    return (chip_info->model == CHIP_ESP32S3);
+}
+
 // Obtains the SCL and SDA values before use (if not already present).
 void WatchyGSR::StartSetup(){
     if (GSR_PIN_SDA == 255){
-        esp_chip_info_t chip_info[sizeof(esp_chip_info_t)];
-        esp_chip_info(chip_info);
-        if (chip_info->model == CHIP_ESP32C3){
+        if(isESP32S3()){
             GSR_PIN_SCL = 11;
             GSR_PIN_SDA = 12;
-            GSR_PIN_CS = 33;
-            GSR_PIN_DC = 34;
-            GSR_PIN_RES = 35;
             GSR_PIN_MISO = 46;
-            GSR_PIN_BUSY = 36;
             GSR_PIN_SCK = 47;
             GSR_PIN_MOSI = 48;
             GSR_PIN_SS = 33;
+            GSR_ESP_WAKEUP = 0;
         }else{
             GSR_PIN_SCL = 22;
             GSR_PIN_SDA = 21;
-            GSR_PIN_CS = 5;
-            GSR_PIN_DC = 10;
-            GSR_PIN_RES = 9;
-            GSR_PIN_BUSY = 19;
             GSR_PIN_SCK = 18;
             GSR_PIN_MISO = 19;
             GSR_PIN_MOSI = 23;
             GSR_PIN_SS = 5;
             GSR_PIN_RTC = 27;
+            GSR_ESP_WAKEUP = 1;
         }
     }
     SPI.end();
     SPI.begin(GSR_PIN_SCK,GSR_PIN_MISO,GSR_PIN_MOSI,GSR_PIN_SS);
 }
 
-uint16_t WatchyGSR::getDispCS() { StartSetup(); return GSR_PIN_CS; }
+uint16_t WatchyGSR::getDispCS()  { return (isESP32S3() ? 33 : 5 ); }
+uint16_t WatchyGSR::getDispDC()  { return (isESP32S3() ? 34 : 10); }
+uint16_t WatchyGSR::getDispRES() { return (isESP32S3() ? 35 : 9 ); }
+uint16_t WatchyGSR::getDispBSY() { return (isESP32S3() ? 36 : 19); }
 
  // Sets up the pin definitions for the current Watchy hardware.
 void WatchyGSR::getPins(float Version){
@@ -1807,12 +1814,12 @@ void WatchyGSR::ProcessNTP(){
   switch (NTPData.State){
     // Start WiFi and Connect.
     case 1:{
-      if (WiFiStatus() != WL_CONNECTED && !WiFiInProgress()){
-          if(currentWiFi() == WL_CONNECT_FAILED){
+      if (WiFiInProgress() && !GSRWiFi.Results){
+          if(NTPData.Wait > 2){
               NTPData.Pause = 0;
               NTPData.State = 99;
-              break;
           }
+          break;
       }
       NTPData.Wait = 0;
       NTPData.Pause = 10;
@@ -1822,19 +1829,12 @@ void WatchyGSR::ProcessNTP(){
 
     // Am I Connected?  If so, ask for NTP.
     case 2:{
-      if (WiFiStatus() != WL_CONNECTED && !WiFiInProgress()){
-          if(currentWiFi() == WL_CONNECT_FAILED){
+      if (WiFiStatus() != WL_CONNECTED){
+          if(currentWiFi() == WL_CONNECT_FAILED || NTPData.Wait > 2){
               NTPData.Pause = 0;
               NTPData.State = 99;
               break;
           }
-          NTPData.Pause = 5;
-          if (NTPData.Wait > 2){
-              NTPData.Pause = 0;
-              NTPData.State = 99;
-              break;
-          }
-          break;
       }
       if (NTPData.TimeZone == false){
           NTPData.State = 5;
@@ -1848,6 +1848,7 @@ void WatchyGSR::ProcessNTP(){
       // Do the next part.
       OP.beginOlsonFromWeb();
       NTPData.Wait = 0;
+      NTPData.tWait = millis() + 4000;
       NTPData.Pause = 1;
       break;
   }
@@ -1865,7 +1866,7 @@ void WatchyGSR::ProcessNTP(){
         NTPData.Wait = 0;
         NTPData.Pause = 0;
         NTPData.State++;   // Test
-      }else if (NTPData.Wait > 0){
+      }else if (NTPData.tWait < millis()){
           NTPData.Pause = 0;
           NTPData.Wait = 0;
           NTPData.State = 5;
@@ -1901,15 +1902,15 @@ void WatchyGSR::ProcessNTP(){
       setStatus("NTP");
       if (WatchStyles.AddOn[Options.WatchFaceStyle] == nullptr) SNTP.Begin(InsertNTPServer()); else SNTP.Begin(WatchStyles.AddOn[Options.WatchFaceStyle]->InsertNTPServer());
       NTPData.Wait = 0;
+      NTPData.tWait = millis() + 4000;
       NTPData.Pause = 01;
       NTPData.State++;
       break;
     }
 
     case 6:{
-      //if (time(nullptr) < 1000000000l){
       if (!SNTP.Query()){
-        if (NTPData.Wait > 0){
+        if (NTPData.tWait < millis()){
             NTPData.Pause = 0;
             NTPData.State = 99;
         }
@@ -1990,7 +1991,7 @@ void WatchyGSR::drawStatus(bool Dark){
 }
 
 void WatchyGSR::setStatus(String Status){
-    if (Status == "" && !SRTC.OnESP32() && !SRTC.isOperating()) Status = "NC";
+    if (Status == "" && !SRTC.onESP32() && !SRTC.isOperating()) Status = "NC";
     if (GSRWiFi.Requests > 0){
         if (WatchyStatus.startsWith(WiFiTXT) && Status != "") WatchyOStatus = WatchyStatus;
         else if (WatchyOStatus.startsWith(WiFiTXT) && Status == "") Status = WatchyOStatus;
@@ -2026,7 +2027,7 @@ void WatchyGSR::SoundAlarms(void * parameter){
     Pulse=false;
     AlarmReset=0;
     Used=true;
-    vTaskDelay(5/portTICK_PERIOD_MS);
+    vTaskDelay(10/portTICK_PERIOD_MS);
     Alarms=(getToneTimes(0) | getToneTimes(1) | getToneTimes(2) | getToneTimes(3) | getToneTimes(4));
                           // Here, do the alarm buzzings by way of which one is running.
     while (Used || Alarms){
@@ -2103,13 +2104,13 @@ void WatchyGSR::SoundAlarms(void * parameter){
             if (AllowHaptic && HapticMS > 0){
               HapticMS--; VibeTo((HapticMS > 0));
             }
-            vTaskDelay(5/portTICK_PERIOD_MS);
+            vTaskDelay(10/portTICK_PERIOD_MS);
         }
         Used |= (HapticMS > 0);
     }
     AllowHaptic = true;
     SoundHandle = NULL;
-    vTaskDelete(SoundHandle);
+    vTaskDelete(NULL);
 }
 
 void WatchyGSR::handleButtonPress(uint8_t Pressed){
@@ -2474,7 +2475,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                       SetTurbo();
                   }else if (Menu.SubItem == 9 && HWVer != 3.0){
                       WatchTime.ESPRTC = !WatchTime.ESPRTC;
-                      SRTC.UseESP32(WatchTime.ESPRTC);
+                      SRTC.useESP32(WatchTime.ESPRTC);
                       UpdateUTC();
                       UpdateClock();
                       Options.NeedsSaving = true;
@@ -3364,6 +3365,31 @@ tmElements_t WatchyGSR::UTCtoLocal(time_t Incoming){
     return T;
 }
 
+time_t WatchyGSR::getISO8601(String inTime){
+    tmElements_t sunT;
+    String s;
+    uint i;
+    s=inTime.charAt(i);
+    if (s == "[") i++;
+    s=inTime.charAt(i);
+    if (s == " ") i++;
+    s = inTime.substring(i,i + 4);
+    sunT.Year = s.toInt();
+    i+=5;
+    s = inTime.substring(i,i + 2);
+    sunT.Month = s.toInt();
+    i+=3;
+    s = inTime.substring(i,i + 2);
+    sunT.Day = s.toInt();
+    i+=3;
+    s = inTime.substring(i,i + 2);
+    sunT.Hour = s.toInt();
+    i+=3;
+    s = inTime.substring(i,i + 2);
+    sunT.Minute = s.toInt();
+    return SRTC.doMakeTime(sunT);
+}
+
 // Manage time will determine if the RTC is in use, will also set a flag to "New Minute" for the loop functions to see the minute change.
 void WatchyGSR::ManageTime(){
     tmElements_t TM;  //    struct tm * tm;
@@ -3475,8 +3501,8 @@ void WatchyGSR::UpdateBMA(){
 }
 
 float WatchyGSR::getBatteryVoltage(){ return ((BatteryRead() - 0.0125) +  (BatteryRead() - 0.0125) + (BatteryRead() - 0.0125) + (BatteryRead() - 0.0125)) / 4; }
-float WatchyGSR::BatteryRead(){ return analogReadMilliVolts(Battery.ADCPin) / 500.0f; } // Battery voltage goes through a 1/2 divider.
-float WatchyGSR::rawBatteryVoltage(){ return (((analogReadMilliVolts(Battery.ADCPin) / 5.0f) + (analogReadMilliVolts(Battery.ADCPin) / 5.0f) + (analogReadMilliVolts(Battery.ADCPin) / 5.0f) + (analogReadMilliVolts(Battery.ADCPin) / 5.0f)) / 4.0f); }
+float WatchyGSR::BatteryRead(){ return analogReadMilliVolts(Battery.ADCPin) / Battery.Divider2; }
+float WatchyGSR::rawBatteryVoltage(){ return (((analogReadMilliVolts(Battery.ADCPin) / Battery.Divider) + (analogReadMilliVolts(Battery.ADCPin) / Battery.Divider) + (analogReadMilliVolts(Battery.ADCPin) / Battery.Divider) + (analogReadMilliVolts(Battery.ADCPin) / Battery.Divider)) / 4.0f); }
 
 uint16_t WatchyGSR::_readRegister(uint8_t address, uint8_t reg, uint8_t *data, uint16_t len) {
   Wire.beginTransmission(address);
@@ -3774,7 +3800,6 @@ void WatchyGSR::KeysCheck(void * parameter){
     KeysCheckOn = true;
     while (KeysCheckOn) {
         Ok = !(Options.SleepStyle == 4 && !Updates.Tapped);
-        //if (UpdateDisp && Menu.Item == GSR_MENU_TOFF && Menu.SubItem > 0 && Menu.SubItem < 6) Ok = false; // Don't allow this to check.
         if (Ok && (LastButton == 0 || (millis() - LastButton) > Debounce()) && Missed == 0 && Button == 0){
             B = getButtonPins();
             if (B) Button = B;
@@ -3782,7 +3807,7 @@ void WatchyGSR::KeysCheck(void * parameter){
         vTaskDelay(50/portTICK_PERIOD_MS);    // 100ms pauses.
     }
     KeysHandle = NULL;
-    vTaskDelete(KeysHandle);
+    vTaskDelete(NULL);
 }
 
 void WatchyGSR::CheckButtons(){
@@ -3875,9 +3900,9 @@ void WatchyGSR::processWiFiRequest(){
             GSRWiFi.Last = 0;
             GSRWiFi.Slow = 3;
             GSRWiFi.Requested = true;
+            GSRWiFi.Working = true;
             return;
         }
-        GSRWiFi.Working = true;
     }
 
     if (WiFiInProgress()) {
@@ -4092,12 +4117,10 @@ void WatchyGSR::initZeros(){
     DefaultWatchStyles = true;
     WatchStyles.Count = 0;
     BasicWatchStyles = -1;
-    for (I = 0; I < GSR_MaxStyles; I++) { WatchStyles.Options[I]=0; WatchStyles.AddOn[I] = nullptr; BootAddOns.Inits[I] = nullptr; if (I<32) WeatherData.APIKey[I] = 0; } BootAddOns.Count = 0;
+    for (I = 0; I < GSR_MaxStyles; I++) { WatchStyles.Options[I]=0; WatchStyles.AddOn[I] = nullptr; BootAddOns.Inits[I] = nullptr; } BootAddOns.Count = 0;
     WeatherData.Ready = false;
     WeatherData.Metric = false;
     WeatherData.State = 0;
-    WeatherData.APIKey[32] = 0;
-    memset(&WeatherData.Weather.Icon[0], '\0',4);
     WeatherData.Weather.ID = 0;
     WeatherData.Weather.Temperature.FeelsLike = 0;
     WeatherData.Weather.Temperature.Current = 0;
@@ -4108,6 +4131,9 @@ void WatchyGSR::initZeros(){
     WeatherData.LastCall = 0;
     WeatherData.LastLon = 0;
     WeatherData.LastLat = 0;
+    WeatherData.StaticLon = 0;
+    WeatherData.StaticLat = 0;
+    WeatherData.UseStaticPOS = false;
     WeatherData.Interval = 6; // 30 mins.
     GSRWebData.Ready = false;
     GSRWebData.Response = 0;
@@ -4133,7 +4159,7 @@ String WatchyGSR::GetSettings(){
 
        // Retrieve the settings from the current state into a base64 string.
 
-    I[J] = 138; J++; // New Version.
+    I[J] = 139; J++; // New Version.
     I[J] = (Steps.Hour); J++;
     I[J] = (Steps.Minutes); J++;
     K  = Options.TwentyFour ? 1 : 0;
@@ -4187,13 +4213,19 @@ String WatchyGSR::GetSettings(){
     I[J] = NTPData.SyncHour; J++;
     I[J] = NTPData.SyncMins; J++;
     I[J] = NTPData.SyncDays; J++;
-
-    S = WeatherData.APIKey; X = S.length();
-    for (Y = 0; Y < 32; Y++){
+    // Version 139
+    S = String(WeatherData.StaticLat,6); X = S.length();
+    for (Y = 0; Y < 13; Y++){
         if (Y < X) I[J] = S.charAt(Y); else I[J] = 0;
         J++;
     }
 
+    S = String(WeatherData.StaticLon,6); X = S.length();
+    for (Y = 0; Y < 13; Y++){
+        if (Y < X) I[J] = S.charAt(Y); else I[J] = 0;
+        J++;
+    }
+    // End Version 139
     I[J]=WeatherData.Interval; J++;
 
     for (X = 0; X < 10; X++){
@@ -4232,7 +4264,7 @@ void WatchyGSR::StoreSettings(String FromUser){
     int64_t DI, DX;
     bool FI, FX;
     uint8_t I, A, W, NewV;  // For WiFi 
-    String S;
+    String S, T;
 
     DI = 0; DX = 0;
     J = FromUser.length(); if (J < 5) return;
@@ -4323,16 +4355,20 @@ void WatchyGSR::StoreSettings(String FromUser){
         J++; if (L > J) {
             if ((O[J] & 1) == 1) DX = 0 - DX;
             J++; if (NewV > 136) if ((O[J] & 8) == 8) DI = 0 - DI;
-            NTPData.AutoSync = ((O[J] & 2) == 2); (FX = (O[J] & 1) == 1); (FI = (O[J] & 8) == 8); WatchTime.ESPRTC = ((O[J] & 4) == 4); SRTC.UseESP32(WatchTime.ESPRTC);
+            NTPData.AutoSync = ((O[J] & 2) == 2); (FX = (O[J] & 1) == 1); (FI = (O[J] & 8) == 8); WatchTime.ESPRTC = ((O[J] & 4) == 4); SRTC.useESP32(WatchTime.ESPRTC);
         }
         J++; if (L > J) { NTPData.SyncHour = O[J]; J++; } // Test
         if (L > J) { NTPData.SyncMins = O[J]; J++; } // Test
         if (NewV >137 && L > J) { NTPData.SyncDays = O[J]; J++; }
         if (!NTPData.SyncDays) NTPData.SyncDays = 1;
         if (NewV > 134){
-            for (I = 0; I < 32; I++){
-                WeatherData.APIKey[I]=O[J]; J++;
-            }
+            if (NewV > 138){
+                S = ""; for (I = 0; I < 13; I++) { if (O[J]) S += String(char(O[J])); J++; }
+                T = ""; for (I = 0; I < 13; I++) { if (O[J]) T += String(char(O[J])); J++; }
+                WeatherData.UseStaticPOS = (S.length() && T.length());
+                WeatherData.StaticLat = S.toDouble();
+                WeatherData.StaticLon = T.toDouble();
+            } else J+=32;
             WeatherData.Interval = constrain(O[J],0,144);
         }
     }
@@ -4500,6 +4536,10 @@ void WatchyGSR::Reboot(){
         NVS.commit();
         NVS.close();
     }
+    KeysStop();
+    if (GSRHandle != NULL) vTaskDelete(GSRHandle);
+    if (SoundHandle != NULL) vTaskDelete(SoundHandle);
+    vTaskDelay(100/portTICK_PERIOD_MS);
     ESP.restart();
 }
 
@@ -4545,7 +4585,7 @@ bool WatchyGSR::InGame() { return (GuiMode == GSR_GAMEON); }
 /* Weather Functions */
 
 void WatchyGSR::StartWeather(){
-  if (WeatherData.State == 0 && NTPData.State < 2 && String(WeatherData.APIKey) != "" && GSRHandle == NULL && GetWantWeather() && Battery.Read > Battery.RadioLevel){
+  if (WeatherData.State == 0 && NTPData.State < 2 && GSRHandle == NULL && GetWantWeather() && Battery.Read > Battery.RadioLevel){
     WeatherData.State = 1;
     WeatherData.Pause = 2;
     AskForWiFi();
@@ -4568,7 +4608,6 @@ int WatchyGSR::GetWeatherTemperatureFeelsLike(){
 void WatchyGSR::SetWeatherScale(bool Metric) { WeatherData.Metric = Metric; }
 bool WatchyGSR::IsMetric() { return WeatherData.Metric; }
 int WatchyGSR::GetWeatherID() { return WeatherData.Weather.ID; }
-String WatchyGSR::GetWeatherIcon() { return WeatherData.Weather.Icon; }
 uint8_t WatchyGSR::GetWeatherHumidity() { return WeatherData.Weather.Humidity; }
 uint8_t WatchyGSR::GetWeatherClouds() { return WeatherData.Weather.Clouds; }
 time_t WatchyGSR::GetWeatherSunRise() { return WeatherData.Weather.SunRise; }
@@ -4579,14 +4618,14 @@ float WatchyGSR::GetWeatherWindSpeed() { if (WeatherData.Metric) return WeatherD
 float WatchyGSR::GetWeatherWindDirection() { return WeatherData.Weather.WindDirection; }
 float WatchyGSR::GetWeatherWindGust() { if (WeatherData.Metric) return WeatherData.Weather.WindGust; else return WeatherData.Weather.WindGust * 0.6214; }
 bool WatchyGSR::GetWebAvailable(){ return (GSRHandle == NULL); }
-bool WatchyGSR::GetWebReady() { return (GSRWebData.Ready && (GSRHandle == NULL)); }
+bool WatchyGSR::GetWebReady() { return GSRWebData.Ready; }
 int WatchyGSR::GetWebResponse() { return GSRWebData.Response; }
 String WatchyGSR::GetWebData() { return GSRWebData.Data; }
 bool WatchyGSR::AskForWeb(String website, uint8_t Timeout){
   if (!GetWebAvailable()) return false;
   GSRWebData.webURL = website;
   GSRWebData.secTimeout = Timeout;
-  GSRRet = xTaskCreate(WatchyGSR::GSRWebGet,"GSRWebGet",20480,NULL,(configMAX_PRIORITIES, - 2),&GSRHandle);
+  GSRRet = xTaskCreate(WatchyGSR::GSRWebGet,"GSRWebGet",20480,NULL,(configMAX_PRIORITIES - 1),&GSRHandle);
   return (GSRHandle != NULL);
 }
 
@@ -4596,20 +4635,33 @@ String WatchyGSR::CleanString(String Clean){
   return Clean;
 }
 
+String WatchyGSR::makeGeo(String inGeo, bool isLat){
+  double _g = inGeo.toDouble();
+  String _s = String(_g, 6);
+  if (inGeo.length() == 0) return inGeo;
+  if (isLat){
+     if (_g > 90.0f || _g < -90.0f) return "";
+  }else{
+     if (_g > 180.0f || _g < -180.0f) return "";
+  }
+  return _s;
+}
+
 void WatchyGSR::ProcessWeather(){
   String S,T , payload;
+  struct tm sunTime;
   JSONVar root;
   if (UpdateDisp || GSRWiFi.Slow > 0 && !inBrownOut()) return;
+
   switch(WeatherData.State){
 
     case 1:{
-      HTTP.setUserAgent(UserAgent);
-      if (WiFiStatus() != WL_CONNECTED && !WiFiInProgress()){
-          if(currentWiFi() == WL_CONNECT_FAILED){
+      if (WiFiInProgress() && GSRWiFi.Results){
+          if(WeatherData.Wait > 2){
               WeatherData.Pause = 0;
               WeatherData.State = 99;
-              break;
           }
+          break;
       }
       WeatherData.Wait = 0;
       WeatherData.Pause = 10;
@@ -4619,8 +4671,14 @@ void WatchyGSR::ProcessWeather(){
 
     // Am I Connected?  If so, ask for GeoLocate to start..
     case 2:{
-      if (WiFiStatus() != WL_CONNECTED && !WiFiInProgress()){
-          if(currentWiFi() == WL_CONNECT_FAILED){
+      if (WeatherData.UseStaticPOS){
+          WeatherData.LastLon = WeatherData.StaticLon;
+          WeatherData.LastLat = WeatherData.StaticLat;
+          WeatherData.State = 4;
+          break;
+      }
+      if (WiFiStatus() != WL_CONNECTED){
+          if(currentWiFi() == WL_CONNECT_FAILED || WeatherData.Wait > 2){
               WeatherData.Pause = 0;
               WeatherData.State = 99;
               break;
@@ -4635,6 +4693,7 @@ void WatchyGSR::ProcessWeather(){
       if (!GetWebAvailable()) break;  // Break out incase a URL request is going.
 
       setStatus("GL");
+      HTTP.setUserAgent(UserAgent);
       if (!AskForWeb("http://ip-api.com/json/?fields=lat,lon")){
           WeatherData.Pause = 0;
           WeatherData.State = 99;
@@ -4682,7 +4741,7 @@ void WatchyGSR::ProcessWeather(){
       if (!GetWebAvailable()) break;  // Break out incase a URL request is going.
       WeatherData.Pause = 1;
       setStatus("WE");
-      if (!AskForWeb("http://api.openweathermap.org/data/2.5/weather?lat=" + String(WeatherData.LastLat) + "&lon=" + String(WeatherData.LastLon) + "&appid=" + WeatherData.APIKey)){
+      if (!AskForWeb("http://api.open-meteo.com/v1/forecast?latitude=" + String(WeatherData.LastLat,6) + "&longitude=" + String(WeatherData.LastLon,6) + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=visibility&daily=sunrise,sunset&timezone=UTC&forecast_days=1&forecast_hours=1")){
           WeatherData.State = 99;
       }else{
           WeatherData.State++;
@@ -4703,35 +4762,31 @@ void WatchyGSR::ProcessWeather(){
         WeatherData.Pause = 0;
         payload = GetWebData();
         root = JSON.parse(payload);
-        S = CleanString(JSON.stringify(root["cod"]));
-        int E = S.toInt();
-        if (E == 401){ for(int I = 0; I < 32; I++) WeatherData.APIKey[I] = 0; Options.NeedsSaving = true; }
-        else if (E == 200){
-            S = CleanString(JSON.stringify(root["main"]["temp"]));
-            WeatherData.Weather.Temperature.Current = (S.toFloat()) - 273.15;
-            S = CleanString(JSON.stringify(root["main"]["feels_like"]));
-            WeatherData.Weather.Temperature.FeelsLike = (S.toFloat()) - 273.15;
-            S = CleanString(JSON.stringify(root["main"]["humidity"]));
+        S = CleanString(JSON.stringify(root["error"]));
+        if (S == "null"){
+            S = CleanString(JSON.stringify(root["current"]["temperature_2m"]));
+            WeatherData.Weather.Temperature.Current = (S.toFloat());
+            S = CleanString(JSON.stringify(root["current"]["apparent_temperature"]));
+            WeatherData.Weather.Temperature.FeelsLike = (S.toFloat());
+            S = CleanString(JSON.stringify(root["current"]["relative_humidity_2m"]));
             WeatherData.Weather.Humidity = uint8_t(S.toInt());
-            S = CleanString(JSON.stringify(root["clouds"]["all"]));
+            S = CleanString(JSON.stringify(root["current"]["cloud_cover"]));
             WeatherData.Weather.Clouds = uint8_t(S.toInt());
-            S = CleanString(JSON.stringify(root["main"]["pressure"]));
+            S = CleanString(JSON.stringify(root["current"]["surface_pressure"]));
             WeatherData.Weather.Pressure = uint16_t(S.toInt());
-            S = CleanString(JSON.stringify(root["weather"][0]["id"]));
+            S = CleanString(JSON.stringify(root["current"]["weather_code"]));
             WeatherData.Weather.ID = S.toFloat();
-            S = CleanString(JSON.stringify(root["weather"][0]["icon"]));
-            strncpy(&WeatherData.Weather.Icon[0],S.c_str(),3);
-            S = CleanString(JSON.stringify(root["wind"]["speed"]));
+            S = CleanString(JSON.stringify(root["current"]["wind_speed_10m"]));
             WeatherData.Weather.WindSpeed = S.toFloat();
-            S = CleanString(JSON.stringify(root["wind"]["gust"]));
+            S = CleanString(JSON.stringify(root["current"]["wind_gusts_10m"]));
             WeatherData.Weather.WindGust = S.toFloat();
-            S = CleanString(JSON.stringify(root["wind"]["deg"]));
+            S = CleanString(JSON.stringify(root["current"]["wind_direction_10m"]));
             WeatherData.Weather.WindDirection = S.toInt();
-            S = CleanString(JSON.stringify(root["sys"]["sunrise"]));
-            WeatherData.Weather.SunRise = time_t(S.toInt());
-            S = CleanString(JSON.stringify(root["sys"]["sunset"]));
-            WeatherData.Weather.SunSet = time_t(S.toInt());
-            S = CleanString(JSON.stringify(root["visibility"]));
+            S = CleanString(JSON.stringify(root["daily"]["sunrise"]));
+            WeatherData.Weather.SunRise = getISO8601(S);
+            S = CleanString(JSON.stringify(root["daily"]["sunset"]));
+            WeatherData.Weather.SunSet = getISO8601(S);
+            S = CleanString(JSON.stringify(root["hourly"]["visibility"]));
             WeatherData.Weather.Visibility = uint32_t(S.toInt());
             WeatherData.Ready = true;
         }
@@ -4756,29 +4811,38 @@ void WatchyGSR::ProcessWeather(){
 }
 
 void WatchyGSR::GSRWebGet(void * parameter){
-vTaskDelay(5/portTICK_PERIOD_MS);
+vTaskDelay(10/portTICK_PERIOD_MS);
 int I = 0;
 GSRWebData.Response = 0;
 GSRWebData.Ready = false;
 GSRWebData.Data = "";
 bool Good = ((WatchStyles.Options[Options.WatchFaceStyle] & GSR_AFW) && WiFi.status() == WL_CONNECTED);
 bool Sent = false;
-uint16_t webTimeout = GSRWebData.secTimeout * 1000;
-unsigned long Stay = millis() + 4000 + webTimeout;
+uint16_t webTimeout = (golow(GSRWebData.secTimeout, 1) + 1) * 1000;
+unsigned long Stay = millis() + webTimeout;
     while (Good && millis() < Stay){
         Good = ((WatchStyles.Options[Options.WatchFaceStyle] & GSR_AFW) && WiFi.status() == WL_CONNECTED);
-        if (!Sent && Good && !inBrownOut()) { Sent = true; HTTP.setConnectTimeout(webTimeout); HTTP.begin(WiFiC, GSRWebData.webURL); }
+        if (!Sent && Good && !inBrownOut()) {
+            vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
+            Sent = true; HTTP.setConnectTimeout(webTimeout); HTTP.begin(WiFiC, GSRWebData.webURL); 
+            vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
+        }
         if (GSRWebData.Response == HTTP_CODE_OK) {
+            vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
             GSRWebData.Data= HTTP.getString();
+            vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
             GSRWebData.Ready = true;
+            vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
             Good = false;
         }
         if (Good) vTaskDelay(100/portTICK_PERIOD_MS);    // 100ms pauses.
-        if (Good && !inBrownOut()) { I = HTTP.GET(); if (I) { GSRWebData.Response = I; if (I != HTTP_CODE_OK) { LastWebError = I; Good = false; } } }
+        if (Good && !inBrownOut()) {
+            I = HTTP.GET(); if (I) { GSRWebData.Response = I; if (I != HTTP_CODE_OK) { LastWebError = I; Good = false; } }
+        }
     }
     HTTP.end();
     GSRHandle = NULL;
-    vTaskDelete(GSRHandle);
+    vTaskDelete(NULL);
 }
 
 void WatchyGSR::getAngle(uint16_t Angle, uint8_t Width, uint8_t Height, uint8_t &OutX, uint8_t &OutY){

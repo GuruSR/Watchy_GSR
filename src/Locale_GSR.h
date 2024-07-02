@@ -366,15 +366,19 @@ class LocaleGSR {
                    case 16:
                       return "Watchy Additional APs updated!";
                    case 17:
-                      return "Watchy OpenWeatherMap.org API Key"; // API Key
+                      return "Watchy Weather Settings";
                    case 18:
-                      return "OpenWeatherMap.org API Key set!";
+                      return "Weather Settings stored!";
                    case 19:
                       return "Menu";
                    case 20:
                       return "Exit";
                    case 21:
                       return "OTA Website turning off";
+                   case 22:
+                      return "Static Longitude";
+                   case 23:
+                      return "Static Latitude";
                 }
             }
         }
