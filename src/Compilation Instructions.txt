@@ -1,16 +1,20 @@
 Compiling instructions:
 
-In order to compile this you need:  Arduino Libraries, ArduinoOTA (included in ESP32 2.0.5+, don't use ESP32 2.0.3 or 2.0.4), SmallRTC (2.2 or greater, GuruSR), SmallNTP (GuruSR), StableBMA (GuruSR), Olson2POSIX (GuruSR) AND Watchy (1.4.7 or greater) base.  For the SmallRTC, SmallNTP, StableBMA and Olson2POSIX repositories, click on the Release (right of page) and click the Source code.zip (master.zip), name it as the library you're downloading (keep the .zip), then using Arduino's Library Manager you can in the Sketch Menu -> Include Library -> Add .Zip Library and pick the downloaded library to add.
+In order to compile this you need:  Arduino Libraries, ArduinoOTA (included in ESP32), SmallRTC (2.3.7 or greater, GuruSR), SmallNTP (GuruSR), StableBMA (GuruSR), Olson2POSIX (GuruSR) AND Watchy (1.4.7 or greater) base.  For the SmallNTP, StableBMA and Olson2POSIX repositories, click on the Release (right of page) and click the Source code.zip (master.zip), name it as the library you're downloading (keep the .zip), then using Arduino's Library Manager you can in the Sketch Menu -> Include Library -> Add .Zip Library and pick the downloaded library to add.
 
 **MUST READ**
 
 Watchy GSR offers OTA, in order for that to work, your compile setup should have the partitions set for MIN_SPIFFS, not anything else, it will compile with HUGE but no OTA will be offered.
 
+**VERSION 1.4.7F CHANGES**
+
+V3:  There is a new version V3, which as of writing, I do not have, but I have partial information and have made hopefully the necessary changes to get this to compile for it.  Double check the Compile Settings if using Arduino, a hopeful platformioV3.ini has to be renamed to platformio.ini before you compile, sadly, there isn't any easy way to do this with that software.
+
 **VERSION 1.4.3+ CHANGES**
 
 Go into the Watchy library folder and move the following files out of it, otherwise it may not compile as these files are out of date:
 
-Safely ignore any errors from WatchyRTC (it isn't used).
+Safely ignore any errors from WatchyRTC (it isn't used).  Safely ignore the PCF8563 warning.
 
 **VERSION 1.4.1 CHANGES**
 
