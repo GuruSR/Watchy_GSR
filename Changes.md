@@ -227,3 +227,15 @@
 - **FIX:**  Fixed V2 UP button declaration for wakeup.
 - **FIX:**  Fixed OTA Website Weather section erroring on invalid length.
 - **ADD:**  New system for versioning of hardware.  No longer using pre-created macros as they're no longer up to date.
+
+**Version 1.4.7F:**
+- **FIX:**  Fixed WiFi code that was causing a re-attempt every split second to connect when connection was already done.
+- **FIX:**  Fixed shortcomings of Watchy V3 and changed ESP32C3 to ESP32S3 (noticed that was the wrong test).
+- **REM:**  Removed openweathermap.org due to 2.5 being discontinued and One Call 3.0 is the only available weather option (which costs money).
+- **ADD:**  Added in open-meteo.com weather in place of openweathermap.org, all calls minus 1 work as expected.  (Sunrise & Sunset may not be as expected.)
+- **REM:**  Removed GetWeatherIcon function as it was specific to openweathermap.org.
+- **FIX:**  Reduced HTTP timeout to 2 seconds, lest the task scheduler has a fit and reboots the Watchy.
+- **FIX:**  Fixed the timing on the vib motor and WebGet tasks to promote better user responsiveness.
+- **FIX:**  Battery Charge init was incorrectly setup, thus caused the charge indicator to instantly light when it shouldn't.
+- **ADD:**  Added Latitude and Longitude static values which can be set in the Weather Settings section of OTA Website.
+- **FIX:**  Hopefully fixed the auto-detect on the V3 display pin change.  (Faked V3 on V2 and the V2 screen did nothing, which is promising.)
