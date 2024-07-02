@@ -2,6 +2,10 @@ Compiling instructions:
 
 In order to compile this you need:  Arduino Libraries, ArduinoOTA (included in ESP32), SmallRTC (2.3.7 or greater, GuruSR), SmallNTP (GuruSR), StableBMA (GuruSR), Olson2POSIX (GuruSR) AND Watchy (1.4.7 or greater) base.  For the SmallNTP, StableBMA and Olson2POSIX repositories, click on the Release (right of page) and click the Source code.zip (master.zip), name it as the library you're downloading (keep the .zip), then using Arduino's Library Manager you can in the Sketch Menu -> Include Library -> Add .Zip Library and pick the downloaded library to add.
 
+**WATCH V3.0 (2024) OWNERS READ THIS!**
+
+First off, I do *NOT* have a testing platform, you're compiling this at your own risk (there won't be any damage to your device).  But in order to actually compile the binary for this new V3, you need to have ESP32 3.0.2+ and ESP-IDF installed (manually) and can be found here at this link:  https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/#manual-installation
+
 **MUST READ**
 
 Watchy GSR offers OTA, in order for that to work, your compile setup should have the partitions set for MIN_SPIFFS, not anything else, it will compile with HUGE but no OTA will be offered.
