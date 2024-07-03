@@ -239,3 +239,7 @@
 - **FIX:**  Battery Charge init was incorrectly setup, thus caused the charge indicator to instantly light when it shouldn't.
 - **ADD:**  Added Latitude and Longitude static values which can be set in the Weather Settings section of OTA Website.
 - **FIX:**  Hopefully fixed the auto-detect on the V3 display pin change.  (Faked V3 on V2 and the V2 screen did nothing, which is promising.)
+
+**Version 1.4.7G:**
+- **ADD:**  Added the GxEPD driver with direct changes to the code base (sadly, as the driver should allow late binding).
+- **FIX:**  Moved the chip detection to the GxEPD driver code to hopefully properly setup for V3.
