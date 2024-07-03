@@ -1,6 +1,10 @@
 #ifndef WATCHY_GSR_H
 #define WATCHY_GSR_H
 
+#ifdef ARDUINO_ESP32S3_DEV
+  #define SMALL_RTC_NO_DS3232
+  #define SMALL_RTC_NO_PCF8563
+#endif
 #include <core_version.h>
 #include "Defines_GSR.h"
 #include "Web-HTML.h"
@@ -18,6 +22,7 @@
 #include <SmallNTP.h>
 #include <Olson2POSIX.h>
 #include <GxEPD2_BW.h>
+#include "GxEPD2_154_D67_GSR.h"
 #include "Locale_GSR.h"
 #include <mbedtls/base64.h>
 #include <Wire.h>
@@ -30,8 +35,8 @@ class WatchyGSR{
     public:
         static SmallRTC SRTC;
         static SmallNTP SNTP;
-        static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
-        static constexpr const char* Build = "1.4.7F";
+        static GxEPD2_BW<GxEPD2_154_D67_GSR, GxEPD2_154_D67_GSR::HEIGHT> display;
+        static constexpr const char* Build = "1.4.7G";
         enum DesOps {dSTATIC, dLEFT, dRIGHT, dCENTER};
 
     public:
@@ -168,10 +173,6 @@ class WatchyGSR{
         void SetupESPValues();
         static void StartSetup();
         static bool isESP32S3();
-        static uint16_t getDispCS();
-        static uint16_t getDispDC();
-        static uint16_t getDispRES();
-        static uint16_t getDispBSY();
         void getPins(float Version);
         void ProcessNTP();
         void UpdateUTC();

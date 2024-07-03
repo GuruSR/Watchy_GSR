@@ -114,10 +114,6 @@ RTC_DATA_ATTR uint8_t  GSR_PIN_ACC_INT1 = 0;
 RTC_DATA_ATTR uint8_t  GSR_PIN_ACC_INT2 = 0;
 RTC_DATA_ATTR uint8_t  GSR_PIN_VIB_PWM = 0;
 RTC_DATA_ATTR uint8_t  GSR_PIN_USB_DET = 255;
-RTC_DATA_ATTR uint8_t  GSR_PIN_SCK = 255;
-RTC_DATA_ATTR uint8_t  GSR_PIN_MISO = 255;
-RTC_DATA_ATTR uint8_t  GSR_PIN_MOSI = 255;
-RTC_DATA_ATTR uint8_t  GSR_PIN_SS = 255;
 RTC_DATA_ATTR uint8_t  GSR_PIN_RTC = 255;
 RTC_DATA_ATTR uint64_t GSR_BTN_MASK;
 RTC_DATA_ATTR uint64_t GSR_MENU_MASK;
@@ -266,7 +262,7 @@ RTC_DATA_ATTR TimeData WatchTime;
 RTC_DATA_ATTR StableBMA SBMA;
 #endif
 RTC_DATA_ATTR LocaleGSR LGSR;
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> WatchyGSR::display(GxEPD2_154_D67(WatchyGSR::getDispCS(), WatchyGSR::getDispDC(), WatchyGSR::getDispRES(), WatchyGSR::getDispBSY()));
+GxEPD2_BW<GxEPD2_154_D67_GSR, GxEPD2_154_D67_GSR::HEIGHT> WatchyGSR::display(GxEPD2_154_D67_GSR{});
 RTC_DATA_ATTR WatchyGSR *MonitorTo;
 
 volatile uint8_t Button;
@@ -478,9 +474,7 @@ void WatchyGSR::init(String datetime){
             UpdateClock();
             InsertPost();
             Updates.Full=true;
-#ifndef GxEPD2DarkBorder
             Options.Border=false;
-#endif
             if (Options.GameCount > 0){
                 if (Options.Game == 255) B = ChangeGame();
                 if (Options.Game != 255) initGame(Options.Game);
@@ -1724,33 +1718,18 @@ bool WatchyGSR::isESP32S3(){
 // Obtains the SCL and SDA values before use (if not already present).
 void WatchyGSR::StartSetup(){
     if (GSR_PIN_SDA == 255){
-        if(isESP32S3()){
+        if(WatchyGSR::isESP32S3()){
             GSR_PIN_SCL = 11;
             GSR_PIN_SDA = 12;
-            GSR_PIN_MISO = 46;
-            GSR_PIN_SCK = 47;
-            GSR_PIN_MOSI = 48;
-            GSR_PIN_SS = 33;
             GSR_ESP_WAKEUP = 0;
         }else{
             GSR_PIN_SCL = 22;
             GSR_PIN_SDA = 21;
-            GSR_PIN_SCK = 18;
-            GSR_PIN_MISO = 19;
-            GSR_PIN_MOSI = 23;
-            GSR_PIN_SS = 5;
             GSR_PIN_RTC = 27;
             GSR_ESP_WAKEUP = 1;
         }
     }
-    SPI.end();
-    SPI.begin(GSR_PIN_SCK,GSR_PIN_MISO,GSR_PIN_MOSI,GSR_PIN_SS);
 }
-
-uint16_t WatchyGSR::getDispCS()  { return (isESP32S3() ? 33 : 5 ); }
-uint16_t WatchyGSR::getDispDC()  { return (isESP32S3() ? 34 : 10); }
-uint16_t WatchyGSR::getDispRES() { return (isESP32S3() ? 35 : 9 ); }
-uint16_t WatchyGSR::getDispBSY() { return (isESP32S3() ? 36 : 19); }
 
  // Sets up the pin definitions for the current Watchy hardware.
 void WatchyGSR::getPins(float Version){
@@ -2364,14 +2343,12 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == GSR_MENU_BRDR){  // Border Mode
-#ifdef GxEPD2DarkBorder
                   Options.Border = !Options.Border;
                   Options.NeedsSaving = true;
                   Updates.Init = true;
                   DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
-#endif
               }else if (Menu.Item == GSR_MENU_ORNT){  // Watchy Orientation
                   Options.Orientated = !Options.Orientated;
                   Options.NeedsSaving = true;
@@ -4281,11 +4258,7 @@ void WatchyGSR::StoreSettings(String FromUser){
         Options.TwentyFour = (V & 1) ? true : false;
         Options.LightMode = (V & 2) ? true : false;
         Options.Feedback = (V & 4) ? true : false;
-#ifdef GxEPD2DarkBorder
         Options.Border = (V & 8) ? true : false;
-#else
-        Options.Border = false;
-#endif
         Options.Lefty = (V & 16) ? true : false;
         Options.Swapped = (V & 32) ? true : false;
         Options.Orientated = (V & 64) ? true : false;
@@ -4563,12 +4536,9 @@ uint8_t WatchyGSR::getTXOffset(wifi_power_t Current){
 }
 
 void WatchyGSR::DisplayInit(bool ForceDark){
-#ifdef GxEPD2DarkBorder
-  display.epd2.setDarkBorder(Options.Border | ForceDark);
-#endif
+  setDarkBorder(Options.Border | ForceDark);
   if (Updates.Init){
     display.init(0,Rebooted,10,true);  // Force it here so it fixes the border.
-    display.epd2.selectSPI(SPI, SPISettings(20000000, MSBFIRST, SPI_MODE0));
     Updates.Init=false;
     Rebooted=false;
   }
