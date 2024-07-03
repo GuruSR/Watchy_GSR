@@ -1531,7 +1531,7 @@ void WatchyGSR::deepSleep(){
   if (Options.NeedsSaving) RecordSettings();
   GoDark(M); DisplaySleep();
   if (DM) SRTC.atMinuteWake(N); else SRTC.nextMinuteWake();
-  ForceInputs();
+  if (!WatchyGSR::isESP32S3()) ForceInputs();
   if (!SRTC.onESP32() && GSR_PIN_RTC == 255) {
     esp_sleep_enable_ext0_wakeup((gpio_num_t)GSR_PIN_STAT, 1 - digitalRead(GSR_PIN_STAT)); // Make the V3 wake up when the Charge state changes.
   }
@@ -1633,7 +1633,7 @@ void WatchyGSR::detectBattery(){
             if (Battery.CState > 150 && !Battery.Ugh) { Battery.Ugh = true; if (OkNVS(GName)) { B = NVS.setString(Bugh,Bugh); NVS.commit(); } }
             if (Battery.Ugh && Battery.Level > 0) Battery.Level = 0;
         }
-    }else Battery.Level = (digitalRead(GSR_PIN_STAT) == 1 ? 2 : -2);
+    }else Battery.Level = (digitalRead(GSR_PIN_STAT) == 0 ? 2 : -2);
     if (Battery.Level > 1){
         Battery.Direction = 1;
         // Check if the NTP has been done.
