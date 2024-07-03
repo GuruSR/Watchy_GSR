@@ -20,6 +20,10 @@ Go into the Watchy library folder and move the following files out of it, otherw
 
 Safely ignore any errors from WatchyRTC (it isn't used).  Safely ignore the PCF8563 warning.
 
+The section lined below is no longer needed from 1.4.7G and above, as it is now included in the code.  These instructions left here for others who want to use it.
+
+===================================== Outdated =====================================
+
 **VERSION 1.4.1 CHANGES**
 
 Requires Watchy base 1.4.1 or greater, as well as the above libraries.  When editing the file changes below, DO NOT COPY items that say not to, instead make the changes or copy in the changes to avoid compiler errors.
@@ -118,4 +122,6 @@ void setDarkBorder(bool Dark);        // GuruSR:  Changed for setDarkBorder
 
 Make a backup of these two files if you happen to update a newer version of GxEPD2.
 
-This will allow the compilation on either Arduino or PlatformIO. 
+====================================================================================
+
+This will allow the compilation on either Arduino or PlatformIO.
