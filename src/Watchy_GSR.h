@@ -2,6 +2,7 @@
 #define WATCHY_GSR_H
 
 #ifdef ARDUINO_ESP32S3_DEV
+  #pragma message "Ignore the errors/warnings about DS3232 and PCF8563, you don't have these in the V3."
   #define SMALL_RTC_NO_DS3232
   #define SMALL_RTC_NO_PCF8563
 #endif
@@ -11,6 +12,11 @@
 #include <Arduino_JSON.h>
 #include <esp_partition.h>
 #include <ESPmDNS.h>
+#include <mbedtls/base64.h>
+#include "esp_chip_info.h"
+#include <driver/periph_ctrl.h>
+#include <driver/rtc_io.h>
+#include <Wire.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <ArduinoOTA.h>
@@ -22,10 +28,7 @@
 #include <SmallNTP.h>
 #include <Olson2POSIX.h>
 #include <GxEPD2_BW.h>
-#include "GxEPD2_154_D67_GSR.h"
 #include "Locale_GSR.h"
-#include <mbedtls/base64.h>
-#include <Wire.h>
 #include <StableBMA.h>  /* Comment this line out for no BMA support */
 #include "Fonts_GSR.h"
 #include "Icons_GSR.h"
@@ -35,8 +38,9 @@ class WatchyGSR{
     public:
         static SmallRTC SRTC;
         static SmallNTP SNTP;
-        static GxEPD2_BW<GxEPD2_154_D67_GSR, GxEPD2_154_D67_GSR::HEIGHT> display;
-        static constexpr const char* Build = "1.4.7G";
+        static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
+        static SPIClass hspi;
+        static constexpr const char* Build = "1.4.7H";
         enum DesOps {dSTATIC, dLEFT, dRIGHT, dCENTER};
 
     public:
@@ -58,7 +62,6 @@ class WatchyGSR{
         virtual bool IsPM() final;
         virtual String GetLangWebID() final;
         virtual void CheckButtons() final;
-        static uint8_t buttonHeld();
         static uint8_t getButtonPins();
         void drawChargeMe(bool Dark = false);
         void drawStatus(bool Dark = false);
@@ -166,14 +169,20 @@ class WatchyGSR{
         void setFontFor(String O, const GFXfont *Normal, const GFXfont *Small, const GFXfont *Smaller, byte Gutter = 5);
         void drawData(String dData, byte Left, byte Bottom, WatchyGSR::DesOps Style, byte Gutter, bool isTime = false, bool PM = false);
         void GoDark(bool DeepSleeping = false);
+        void espPinSetup(gpio_num_t pin, bool pullUp = true, bool bOutput = true);
         void ForceInputs();
         void detectBattery();
         static bool inBrownOut();
         static void BrownOutDetect(bool On = false);
         void SetupESPValues();
-        static void StartSetup();
+        void espPinModes();
+        static void startSetup();
         static bool isESP32S3();
         void getPins(float Version);
+        static uint16_t getDispCS();
+        static uint16_t getDispDC();
+        static uint16_t getDispRES();
+        static uint16_t getDispBSY();
         void ProcessNTP();
         void UpdateUTC();
         void UpdateClock();

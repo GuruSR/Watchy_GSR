@@ -114,6 +114,10 @@ RTC_DATA_ATTR uint8_t  GSR_PIN_ACC_INT1 = 0;
 RTC_DATA_ATTR uint8_t  GSR_PIN_ACC_INT2 = 0;
 RTC_DATA_ATTR uint8_t  GSR_PIN_VIB_PWM = 0;
 RTC_DATA_ATTR uint8_t  GSR_PIN_USB_DET = 255;
+RTC_DATA_ATTR uint8_t  GSR_PIN_SCK = 255;
+RTC_DATA_ATTR uint8_t  GSR_PIN_MISO = 255;
+RTC_DATA_ATTR uint8_t  GSR_PIN_MOSI = 255;
+RTC_DATA_ATTR uint8_t  GSR_PIN_SS = 255;
 RTC_DATA_ATTR uint8_t  GSR_PIN_RTC = 255;
 RTC_DATA_ATTR uint64_t GSR_BTN_MASK;
 RTC_DATA_ATTR uint64_t GSR_MENU_MASK;
@@ -162,6 +166,7 @@ RTC_DATA_ATTR struct BatteryUse final {
     uint32_t ADCPin;        // Here for static use.
     float Divider;          // Divider for battery.
     float Divider2;         // For formatted battery.
+    bool Charge;            // V3 charge indicator.
     bool Ugh;               // 3rd party.
     int8_t CState;
     struct {
@@ -254,6 +259,7 @@ RTC_DATA_ATTR struct webGSR final {
   String Data;            /* Data retrieved from HTTP Get NOT PERSISTENT! */
 } GSRWebData;
 
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> WatchyGSR::display(GxEPD2_154_D67(WatchyGSR::getDispCS(), WatchyGSR::getDispDC(), WatchyGSR::getDispRES(), WatchyGSR::getDispBSY()));
 RTC_DATA_ATTR SmallRTC WatchyGSR::SRTC;
 RTC_DATA_ATTR SmallNTP WatchyGSR::SNTP;
 RTC_DATA_ATTR Designing Design;
@@ -262,8 +268,8 @@ RTC_DATA_ATTR TimeData WatchTime;
 RTC_DATA_ATTR StableBMA SBMA;
 #endif
 RTC_DATA_ATTR LocaleGSR LGSR;
-GxEPD2_BW<GxEPD2_154_D67_GSR, GxEPD2_154_D67_GSR::HEIGHT> WatchyGSR::display(GxEPD2_154_D67_GSR{});
 RTC_DATA_ATTR WatchyGSR *MonitorTo;
+SPIClass WatchyGSR::hspi(HSPI);
 
 volatile uint8_t Button;
 volatile uint8_t Missed;    // Button not in menu, not used, so can be used by override.
@@ -300,6 +306,7 @@ time_t TurboTime;  // Moved here for less work.
 bool AllowHaptic;  // For the Task to tell the main thread it can't use the Haptic feedback due to alarm/timer.
 uint8_t HapticMS;  // Holds how long it runs for.
 bool WfNM;         // Wait for New Minute.
+bool setPinModes;  // In the attempt to not break the V3...
 unsigned long LastButton, OTAFail, OTAOff, LastHelp;
 RTC_DATA_ATTR TaskHandle_t SoundHandle;
 RTC_DATA_ATTR BaseType_t SoundRet;
@@ -330,7 +337,7 @@ void WatchyGSR::setupDefaults(){
     Options.BedTimeOrientation = false;
     Options.WatchFaceStyle = 0;
     Options.LanguageID = 0;
-    GSRWiFi.TransmitPower = WiFi.getTxPower();
+    GSRWiFi.TransmitPower = RawWiFiTX[0];
     Steps.Hour = 6;
     Steps.Minutes = 0;
     NTPData.AutoSync = false;
@@ -346,11 +353,10 @@ void WatchyGSR::init(String datetime){
     unsigned long Since, APLoop;
     uint8_t I;
     String S;
+    startSetup();
     esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause(); //get wake up reason
     esp_reset_reason_t reset_reason = esp_reset_reason();
     wakeupBit = esp_sleep_get_ext1_wakeup_status();
-    StartSetup();
-    Wire.begin(GSR_PIN_SDA, GSR_PIN_SCL); //init i2c
     NVS.begin();
     ResetEndOTA();
     WfNM = false;
@@ -379,12 +385,13 @@ void WatchyGSR::init(String datetime){
     GSRHandle = NULL;
     KeysHandle = NULL;
     KeysCheckOn = false;
+    setPinModes = false;
     CPUSet.Freq=getCpuFrequencyMhz();
+
     switch (wakeup_reason)
     {
         case ESP_SLEEP_WAKEUP_EXT0: //RTC Alarm & V3 Charge indicator
         case ESP_SLEEP_WAKEUP_TIMER: // Internal RTC Alarm
-
             RefreshCPU(GSR_CPUDEF);
             BrownOutDetect();
 #ifndef SMALL_RTC3_H
@@ -403,10 +410,11 @@ void WatchyGSR::init(String datetime){
             RefreshCPU(GSR_CPUDEF);
             BrownOutDetect();
             UpdateUTC();
+            espPinModes();
             Button = getButtonMaskToID(wakeupBit);
             B = (Options.SleepStyle != 4);
             if (B) UpdateDisp |= Showing();
-            if (Darkness.Went && UpRight()){
+            if (Darkness.Went && (UpRight() || HWVer == 3.0f)){
                 if (Button == 9 && Options.SleepStyle > 1 && B){  // Accelerometer caused this.
                     if (Options.SleepMode == 0) Options.SleepMode = 2;  // Do this to avoid someone accidentally not setting this before usage.
                     DisplayWake(true); // Update Screen to new state.
@@ -439,8 +447,8 @@ void WatchyGSR::init(String datetime){
             Battery.FloatBottom = 0;
             Battery.FloatTop = 4;
             if (OkNVS(GName)){ B = NVS.getString(Bugh,S); Battery.Ugh = (S > ""); }
-            Battery.Divider = (HWVer == 3.0 ? 1.296f : 5.0f);
-            Battery.Divider2 = (HWVer == 3.0 ? 129.6f : 500.0f);
+            Battery.Divider = (HWVer == 3.0f ? 7.826f : 5.0f); // 7.34694 vs 7.826
+            Battery.Divider2 = (HWVer == 3.0f ? 782.608f : 500.0f);  //734.693 vs 782.608
             Battery.State = 0;
             Battery.DarkState = 0;
             Battery.Direction = -1;
@@ -474,7 +482,9 @@ void WatchyGSR::init(String datetime){
             UpdateClock();
             InsertPost();
             Updates.Full=true;
+#ifndef GxEPD2DarkBorder
             Options.Border=false;
+#endif
             if (Options.GameCount > 0){
                 if (Options.Game == 255) B = ChangeGame();
                 if (Options.Game != 255) initGame(Options.Game);
@@ -491,10 +501,9 @@ void WatchyGSR::init(String datetime){
             break;
     }
 
-    pinMode(GSR_MENU_PIN, INPUT);   // Prep these for the loop below.
-    pinMode(GSR_BACK_PIN, INPUT);
-    pinMode(GSR_UP_PIN, INPUT);
-    pinMode(GSR_DOWN_PIN, INPUT);
+    espPinModes();
+
+//HapticMS = 5; SoundBegin();
 
     B = true; Up = false;
     if (Darkness.Went && GuiMode != GSR_MENUON)
@@ -546,7 +555,6 @@ void WatchyGSR::init(String datetime){
               }
 
               // Here, check for button presses and respond, done here to avoid turbo button presses.
-
               if (Button) { handleButtonPress(Button); Button = 0; }
 
 /* ALARMS */
@@ -568,6 +576,7 @@ void WatchyGSR::init(String datetime){
               }
 
 /* Weather */
+
               if (WeatherData.State && NTPData.State < 2 && !WatchyAPOn && !OTAUpdate && GSRWiFi.Slow == 0 && !inBrownOut()){
 
                 if (WeatherData.Pause == 0) ProcessWeather(); else WeatherData.Pause--;
@@ -578,7 +587,7 @@ void WatchyGSR::init(String datetime){
               }
 
               if (GuiMode == GSR_WATCHON && GetMenuOverride()) {
-                if (Missed == 0) Missed = getButtonPins();
+                if (Missed == 0) Missed = WatchyGSR::getButtonPins();
                 if ((Missed != 1 && Button) || (Missed == 1 && LastHelp == 0)) { LastHelp = millis(); SetTurbo(); }
                 else if (Missed == 1 && millis() - LastHelp > 9999) { ShowDefaultMenu(); Missed = 0; }
               }
@@ -592,6 +601,7 @@ void WatchyGSR::init(String datetime){
               if (WatchTime.NewMinute) UpdateDisp |= Showing();
 
 /* OTA */
+
               // OTAEnd code.
               if (OTAEnd){
                 if (Menu.Item == GSR_MENU_OTAU)      { ArduinoOTA.end(); Menu.SubItem = 0; }
@@ -614,6 +624,7 @@ void WatchyGSR::init(String datetime){
               }
 
 /* OTA */
+
               if (WatchyAPOn && IsEndOTA()) OTAEnd = true;  // Fail if holding back for 10 seconds OR 600 seconds has passed.
               if (OTAUpdate && !UpdateDisp && GSRWiFi.Slow == 0 && !inBrownOut()){
                 switch (Menu.SubItem){
@@ -657,7 +668,7 @@ void WatchyGSR::init(String datetime){
                     if (WiFiStatus() == WL_DISCONNECTED || OTAEnd) OTAEnd = true;
                     else if (Menu.Item == GSR_MENU_OTAU)      ArduinoOTA.handle();
                     else if (Menu.Item == GSR_MENU_OTAM)      server.handleClient();
-                    if (getButtonPins() != 2) OTATimer = millis(); // Not pressing "BACK".
+                    if (WatchyGSR::getButtonPins() != 2) OTATimer = millis(); // Not pressing "BACK".
                     if (millis() - OTATimer > 10000 || millis() > OTAFail || IsEndOTA()) OTAEnd = true;  // Fail if holding back for 10 seconds OR 600 seconds has passed.
                 }
               }
@@ -665,10 +676,12 @@ void WatchyGSR::init(String datetime){
               if (UpdateDisp) showWatchFace(); //partial updates on tick
 
 /* SOUNDS */
+
               if (SoundStart) SoundBegin(); /* removed: (Alarming || !inBrownOut()) &&  */
 
 /* NON-SENSITIVE */
               // Don't do anything time sensitive while in OTA Update.
+
               if (!Sensitive){
 
 /* Battery Detection */
@@ -720,7 +733,7 @@ void WatchyGSR::init(String datetime){
               }
 
               if (Darkness.Went && Options.NeedsSaving) RecordSettings();
-              //CheckButtons();
+              if (HWVer = 3.0f) CheckButtons();
 
               if (!Updates.Init && !SoundActive() && !(InTurbo() || B)) DisplaySleep();
             }
@@ -869,18 +882,15 @@ void WatchyGSR::showWatchFace(){
   int I;
   bool B = (Battery.Read > Battery.MinLevel);
   if (Options.Performance && B) if (Options.Performance == 1) RefreshCPU(GSR_CPUMID); else if (Options.Performance == 2) RefreshCPU(GSR_CPULOW);
-  if (Options.Feedback && DoHaptic && B && AllowHaptic) { HapticMS = 10; SoundBegin(); }
+  if (Options.Feedback && DoHaptic && B && AllowHaptic) { HapticMS = 5; SoundBegin(); }
   DisplayInit();
   display.setFullWindow();
   if (GuiMode == GSR_GAMEON) drawGame(); else drawWatchFace();
-  //RefreshCPU(GSR_CPULOW);
-  //CheckButtons();
   display.display(!Updates.Full); //partial refresh
   if (!(InTurbo() || SoundActive() || !DarkWait())) DisplaySleep();
   DoHaptic=false;
   Updates.Full=false;
   Updates.Drawn=true;
-  //if (B) RefreshCPU(GSR_CPUDEF);
   UpdateDisp=false;
   Darkness.Went=false;
   Darkness.Last = millis();
@@ -1277,8 +1287,8 @@ void WatchyGSR::drawMenu(){
                 O = LGSR.GetID(Options.LanguageID,90) + ": " + String(Battery.Read - (Battery.Read > GSR_MaxBattery ? 1.00 : 0.00)) + "V";
                 break;
             case 2:
-                if (HWVer > 1.0) { if (HWVer == 3.0) O = "ESP32"; else O = (HWVer == 2.0) ? "V2.0 PCF8563" : "V1.5 PCF8563"; } else O = "V1 DS3231M";
-                if (HWVer != 3.0 && SRTC.onESP32()) O += " ESP";
+                if (HWVer > 1.0f) { if (HWVer == 3.0f) O = "V3 ESP32S3"; else O = (HWVer == 2.0f) ? "V2.0 PCF8563" : "V1.5 PCF8563"; } else O = "V1 DS3231M";
+                if (HWVer != 3.0f && SRTC.onESP32()) O += " ESP";
                 break;
         }
     }else if (Menu.Item == GSR_MENU_SAVE){  // Performance
@@ -1393,7 +1403,7 @@ void WatchyGSR::drawMenu(){
             O = LGSR.GetID(Options.LanguageID,120);
         }else if (Menu.SubItem == 8){ // Drift Current
             O = String(SRTC.getDrift(WatchTime.ESPRTC)) + "/" + (SRTC.isFastDrift(WatchTime.ESPRTC) ? "-1" : "1");
-        }else if (Menu.SubItem == 9 && HWVer != 3.0){ // Toggle ESP32 RTC
+        }else if (Menu.SubItem == 9 && HWVer != 3.0f){ // Toggle ESP32 RTC
             O = LGSR.GetID(Options.LanguageID,(WatchTime.ESPRTC ? 81 : 83));  /* WatchTime.ESPRTC, really says use the ESP32 */
         }else if (Menu.SubItem == 11){ // Drift Current
             S = String(SRTC.getDrift(WatchTime.ESPRTC));
@@ -1499,8 +1509,10 @@ void WatchyGSR::setFontColor(uint16_t Color){
 
 void WatchyGSR::deepSleep(){
   uint8_t N, D, H; // 3.0
+  uint64_t cI;
   bool BatOk, BT,B, DM, CD, M;
   struct tm * CT;
+
   DM = false; CD=TimerDown.Active;
   UpdateUTC(); UpdateClock(); M =(GuiMode != GSR_MENUON);
   if (CD && (TimerDown.StopAt - WatchTime.UTC_RAW) > 60) CD = false;
@@ -1527,16 +1539,12 @@ void WatchyGSR::deepSleep(){
     if (Steps.Hour == H && Steps.Minutes < N && Steps.Minutes > WatchTime.Local.Minute) N = Steps.Minutes;
     if (!SRTC.checkingDrift(WatchTime.ESPRTC) && NTPData.AutoSync && (NTPData.SyncDays & Bits[WatchTime.Local.Wday]) && NTPData.SyncHour == H && NTPData.SyncMins < N && NTPData.SyncMins > WatchTime.Local.Minute) N = NTPData.SyncMins;
   }
-
   if (Options.NeedsSaving) RecordSettings();
   GoDark(M); DisplaySleep();
   if (DM) SRTC.atMinuteWake(N); else SRTC.nextMinuteWake();
-  if (!WatchyGSR::isESP32S3()) ForceInputs();
-  if (!SRTC.onESP32() && GSR_PIN_RTC == 255) {
-    esp_sleep_enable_ext0_wakeup((gpio_num_t)GSR_PIN_STAT, 1 - digitalRead(GSR_PIN_STAT)); // Make the V3 wake up when the Charge state changes.
-  }
+  ForceInputs();
 #ifdef STABLEBMA_H_INCLUDED
-  esp_sleep_enable_ext1_wakeup((B ? SBMA.WakeMask() : 0) | GSR_BTN_MASK, (esp_sleep_ext1_wakeup_mode_t)GSR_ESP_WAKEUP); //enable deep sleep wake on button press  ... |ACC_INT_MASK
+  esp_sleep_enable_ext1_wakeup((B && HWVer != 3.0f ? SBMA.WakeMask() : 0) | GSR_BTN_MASK, (esp_sleep_ext1_wakeup_mode_t)GSR_ESP_WAKEUP); //enable deep sleep wake on button press  ... |ACC_INT_MASK
 #else
   esp_sleep_enable_ext1_wakeup(GSR_BTN_MASK, (esp_sleep_ext1_wakeup_mode_t)GSR_ESP_WAKEUP); //enable deep sleep wake on button press  ... |ACC_INT_MASK
 #endif
@@ -1568,7 +1576,27 @@ void WatchyGSR::GoDark(bool DeepSleeping){
   }
 }
 
+void WatchyGSR::espPinSetup(gpio_num_t pin, bool pullUp, bool bOutput){
+  if (GSR_PIN_RTC == 255 && pin < 22) {
+    rtc_gpio_set_direction(pin, (bOutput ? RTC_GPIO_MODE_OUTPUT_ONLY : RTC_GPIO_MODE_INPUT_ONLY));
+    if (pullUp) {
+      rtc_gpio_pulldown_dis(pin);
+      rtc_gpio_pullup_en(pin);
+    } else {
+      rtc_gpio_pullup_dis(pin);
+      rtc_gpio_pulldown_en(pin);
+    }
+  }
+}
+
 void WatchyGSR::ForceInputs(){
+if (GSR_PIN_RTC == 255){
+    espPinSetup((gpio_num_t)GSR_UP_PIN,true,false);
+    espPinSetup((gpio_num_t)GSR_PIN_USB_DET,false,false);
+    espPinSetup((gpio_num_t)GSR_PIN_ACC_INT1,true,false);
+//    esp_sleep_enable_ext0_wakeup((gpio_num_t)GSR_PIN_USB_DET, digitalRead(GSR_PIN_USB_DET) ? HIGH : LOW);
+    return;
+}
 uint8_t P = SRTC.getADCPin();
 /* Unused GPIO PINS */
     pinMode(0,INPUT);   /* BTN3 v3 */
@@ -1588,10 +1616,6 @@ uint8_t P = SRTC.getADCPin();
     if (GSR_UP_PIN != 32) pinMode(32,INPUT);  /* BTN3     */
     if (!(GSR_UP_PIN == 35 || P == 35)) pinMode(35,INPUT);  /* ADC/BTN3 */
     pinMode(4,INPUT);   /* BTN4 */
-/* BATTERY */
-    //pinMode(27,INPUT);  /* INT      */
-    //if (P != 33) pinMode(33,INPUT);  /* ADC      */
-    //if (P != 34) pinMode(34,INPUT);  /* ADC      */
 /* RTC */
     pinMode(21,INPUT);  /* SDA  */
     pinMode(22,INPUT);  /* SCL  */
@@ -1633,7 +1657,13 @@ void WatchyGSR::detectBattery(){
             if (Battery.CState > 150 && !Battery.Ugh) { Battery.Ugh = true; if (OkNVS(GName)) { B = NVS.setString(Bugh,Bugh); NVS.commit(); } }
             if (Battery.Ugh && Battery.Level > 0) Battery.Level = 0;
         }
-    }else Battery.Level = (digitalRead(GSR_PIN_STAT) == 0 ? 2 : -2);
+    }else {
+        B = Battery.Charge;
+        Battery.Charge = (analogRead(GSR_PIN_STAT) * 0.80586 > 3200 && digitalRead(GSR_PIN_USB_DET));
+        Battery.Read = rawBatteryVoltage() / 100; Battery.Level = (Battery.Charge ? 2 : -2);
+        if (B != Battery.Charge) { Updates.Drawn = true; UpdateDisp |= Showing(); }
+        B = false;
+    }
     if (Battery.Level > 1){
         Battery.Direction = 1;
         // Check if the NTP has been done.
@@ -1646,12 +1676,12 @@ void WatchyGSR::detectBattery(){
     Mins = Battery.State; /* Set update for display if the battery state changes */
 
     // Do battery state here.
-    if (WatchTime.UTC_RAW > Battery.LastState){
+    if (WatchTime.UTC_RAW > Battery.LastState || GSR_PIN_STAT != 255){
         Battery.LastState = WatchTime.UTC_RAW + 10;
         if (Battery.Direction > 0) Battery.State = 3;
         else Battery.State = (Battery.Read > Battery.MinLevel ? (Battery.Read > Battery.LowLevel ? 0 : 1) : 2);
         if (Mins != Battery.State || (Darkness.Went && (Battery.DarkState != Battery.State || Battery.DarkDirection != Battery.Direction))) { Updates.Drawn = true; UpdateDisp |= Showing(); } // Fix the battery indicator.
-        if (Battery.Read > Battery.RadioLevel && B) StartNTP(true);
+        if (Battery.Read > Battery.RadioLevel && B && Battery.State == 3) StartNTP(true);
     }
 }
 
@@ -1674,33 +1704,28 @@ bool WatchyGSR::inBrownOut() {
  
  */
 
-void WatchyGSR::BrownOutDetect(bool On) { if (Watchy_Chip_Info.BrownOutDetection) WRITE_PERI_REG(Watchy_Chip_Info.BrownOutDetection, (On ? 1 : 0)); }
+void WatchyGSR::BrownOutDetect(bool On) { if (Watchy_Chip_Info.BrownOutDetection && GSR_PIN_RTC != 255) WRITE_PERI_REG(Watchy_Chip_Info.BrownOutDetection, (On ? 1 : 0)); }
 
 void WatchyGSR::SetupESPValues(){
     uint32_t F; // Feature.
     esp_chip_info_t Chip_Info[sizeof(esp_chip_info_t)];
     esp_chip_info(Chip_Info);
-    switch (Chip_Info->model){
-        case CHIP_ESP32:
+    if (Chip_Info->model == CHIP_ESP32){
             F = Chip_Info->features;
             Watchy_Chip_Info.Base = 0x3FF48000;
             Watchy_Chip_Info.BrownOutDetection = Watchy_Chip_Info.Base + 0xD4;
-        break;
-        case CHIP_ESP32S2:
+    } else if (Chip_Info->model == CHIP_ESP32S2){
             F = Chip_Info->features;
             Watchy_Chip_Info.Base = 0x3F408000;
             Watchy_Chip_Info.BrownOutDetection = Watchy_Chip_Info.Base + 0xD8;
-        break;
-        case CHIP_ESP32S3:
+    } else if (Chip_Info->model == CHIP_ESP32S3){
             F = Chip_Info->features;
             Watchy_Chip_Info.Base = 0x60008000;
             Watchy_Chip_Info.BrownOutDetection = Watchy_Chip_Info.Base + 0xE8;
-        break;
-        case CHIP_ESP32C3:
+    } else if (Chip_Info->model == CHIP_ESP32C3){
             F = Chip_Info->features;
             Watchy_Chip_Info.Base = 0x60008000;
             Watchy_Chip_Info.BrownOutDetection = Watchy_Chip_Info.Base + 0xD8;
-        break;
     }
     if (F){
         Watchy_Chip_Info.HasWiFi = (F & (CHIP_FEATURE_WIFI_BGN | CHIP_FEATURE_IEEE802154));
@@ -1709,6 +1734,21 @@ void WatchyGSR::SetupESPValues(){
     }
 }
 
+void WatchyGSR::espPinModes() {
+    if (setPinModes) return;
+    setPinModes = true;
+    pinMode(GSR_MENU_PIN,INPUT);
+    pinMode(GSR_BACK_PIN,INPUT);
+    pinMode(GSR_UP_PIN,INPUT);
+    pinMode(GSR_DOWN_PIN,INPUT);
+    if (GSR_PIN_USB_DET != 255) { pinMode(GSR_PIN_USB_DET,INPUT); pinMode(GSR_PIN_ADC,INPUT); }
+}
+
+uint16_t WatchyGSR::getDispCS()  { return (WatchyGSR::isESP32S3() ? 33 : 5 ); }
+uint16_t WatchyGSR::getDispDC()  { return (WatchyGSR::isESP32S3() ? 34 : 10); }
+uint16_t WatchyGSR::getDispRES() { return (WatchyGSR::isESP32S3() ? 35 : 9 ); }
+uint16_t WatchyGSR::getDispBSY() { return (WatchyGSR::isESP32S3() ? 36 : 19); }
+
 bool WatchyGSR::isESP32S3(){
     esp_chip_info_t chip_info[sizeof(esp_chip_info_t)];
     esp_chip_info(chip_info);
@@ -1716,19 +1756,29 @@ bool WatchyGSR::isESP32S3(){
 }
 
 // Obtains the SCL and SDA values before use (if not already present).
-void WatchyGSR::StartSetup(){
+void WatchyGSR::startSetup(){
     if (GSR_PIN_SDA == 255){
         if(WatchyGSR::isESP32S3()){
             GSR_PIN_SCL = 11;
             GSR_PIN_SDA = 12;
             GSR_ESP_WAKEUP = 0;
+            GSR_PIN_MISO = 46;
+            GSR_PIN_SCK = 47;
+            GSR_PIN_MOSI = 48;
+            GSR_PIN_SS = 33;
         }else{
             GSR_PIN_SCL = 22;
             GSR_PIN_SDA = 21;
             GSR_PIN_RTC = 27;
             GSR_ESP_WAKEUP = 1;
+            GSR_PIN_SCK = 18;
+            GSR_PIN_MISO = 19;
+            GSR_PIN_MOSI = 23;
+            GSR_PIN_SS = 5;
         }
     }
+    if (i2cIsInit(0)) Wire.end();
+    Wire.begin(GSR_PIN_SDA,GSR_PIN_SCL);
 }
 
  // Sets up the pin definitions for the current Watchy hardware.
@@ -1990,6 +2040,7 @@ void WatchyGSR::VibeTo(bool Mode){
             digitalWrite(GSR_PIN_VIB_PWM, true);
         }else{
             digitalWrite(GSR_PIN_VIB_PWM, false);
+            pinMode(GSR_PIN_VIB_PWM, INPUT);
         }
         VibeMode = Mode;
     }
@@ -2343,12 +2394,14 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
               }else if (Menu.Item == GSR_MENU_BRDR){  // Border Mode
+#ifdef GxEPD2DarkBorder
                   Options.Border = !Options.Border;
                   Options.NeedsSaving = true;
                   Updates.Init = true;
                   DoHaptic = true;
                   UpdateDisp = true;  // Quick Update.
                   SetTurbo();
+#endif
               }else if (Menu.Item == GSR_MENU_ORNT){  // Watchy Orientation
                   Options.Orientated = !Options.Orientated;
                   Options.NeedsSaving = true;
@@ -2450,7 +2503,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
                       DoHaptic = true;
                       UpdateDisp = true;  // Quick Update.
                       SetTurbo();
-                  }else if (Menu.SubItem == 9 && HWVer != 3.0){
+                  }else if (Menu.SubItem == 9 && HWVer != 3.0f){
                       WatchTime.ESPRTC = !WatchTime.ESPRTC;
                       SRTC.useESP32(WatchTime.ESPRTC);
                       UpdateUTC();
@@ -2776,7 +2829,10 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               switch (Menu.SubItem){
                   case 1: // Style.
 #ifdef STABLEBMA_H_INCLUDED
-                      Options.SleepStyle = roller(Options.SleepStyle + 1, 0, 4);
+                      if (HWVer = 3.0f){
+                          if (Options.SleepStyle != 2) Options.SleepStyle = 2;
+                          else Options.SleepStyle = 0;
+                      }else Options.SleepStyle = roller(Options.SleepStyle + 1, 0, 4);
 #else
                       if (Options.SleepStyle != 2) Options.SleepStyle = 2;
                       else Options.SleepStyle = 0;
@@ -3101,7 +3157,10 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               switch (Menu.SubItem){
                   case 1: // Style.
 #ifdef STABLEBMA_H_INCLUDED
-                      Options.SleepStyle = roller(Options.SleepStyle - 1, 0, 4);
+                      if (HWVer == 3.0f){
+                      if (Options.SleepStyle != 2) Options.SleepStyle = 2;
+                      else Options.SleepStyle = 0;
+                      }else Options.SleepStyle = roller(Options.SleepStyle - 1, 0, 4);
 #else
                       if (Options.SleepStyle != 2) Options.SleepStyle = 2;
                       else Options.SleepStyle = 0;
@@ -3460,7 +3519,7 @@ uint8_t Type = SRTC.getType();
     return;
   }
 
-  if (!SBMA.defaultConfig()) return;  // Failed.
+  if (!SBMA.defaultConfig(HWVer != 3.0)) return;  // Failed.
   // Enable BMA423 isStepCounter feature
   SBMA.enableFeature(BMA423_STEP_CNTR, true);
 #endif
@@ -3472,8 +3531,10 @@ void WatchyGSR::UpdateBMA(){
     bool A = (Options.SleepStyle == 1);
 
 #ifdef STABLEBMA_H_INCLUDED
-    SBMA.enableDoubleClickWake(B | BT);
-    SBMA.enableTiltWake((A | B) & !WatchTime.BedTime);
+    if (HWVer != 3.0f){
+        SBMA.enableDoubleClickWake(B | BT);
+        SBMA.enableTiltWake((A | B) & !WatchTime.BedTime);
+    }
 #endif
 }
 
@@ -3778,7 +3839,7 @@ void WatchyGSR::KeysCheck(void * parameter){
     while (KeysCheckOn) {
         Ok = !(Options.SleepStyle == 4 && !Updates.Tapped);
         if (Ok && (LastButton == 0 || (millis() - LastButton) > Debounce()) && Missed == 0 && Button == 0){
-            B = getButtonPins();
+            B = WatchyGSR::getButtonPins();
             if (B) Button = B;
         }
         vTaskDelay(50/portTICK_PERIOD_MS);    // 100ms pauses.
@@ -3793,19 +3854,18 @@ void WatchyGSR::CheckButtons(){
     if (!UpdateDisp && B && (LastButton == 0 || (millis() - LastButton) > Debounce()) && Missed == 0 && Button == 0) Button = B;
 }
 
-uint8_t WatchyGSR::buttonHeld() { return (HWVer == 3 ? 0 : 1); }
-uint8_t WatchyGSR::getButtonPins(){ return getSWValue((digitalRead(GSR_MENU_PIN) == buttonHeld()), (digitalRead(GSR_BACK_PIN) == buttonHeld()), (digitalRead(GSR_UP_PIN) == buttonHeld()), (digitalRead(GSR_DOWN_PIN) == buttonHeld())); }
+uint8_t WatchyGSR::getButtonPins(){ return getSWValue((digitalRead(GSR_MENU_PIN) == GSR_ESP_WAKEUP), (digitalRead(GSR_BACK_PIN) == GSR_ESP_WAKEUP), (digitalRead(GSR_UP_PIN) == GSR_ESP_WAKEUP), (digitalRead(GSR_DOWN_PIN) == GSR_ESP_WAKEUP)); }
 
 uint8_t WatchyGSR::getButtonMaskToID(uint64_t HW){
     uint8_t HB = getSWValue((HW & GSR_MENU_MASK), (HW & GSR_BACK_MASK), (HW & GSR_UP_MASK), (HW & GSR_DOWN_MASK));
-    uint8_t LB = getButtonPins();
+    uint8_t LB = WatchyGSR::getButtonPins();
 #ifdef STABLEBMA_H_INCLUDED
     if (SBMA.didBMAWakeUp(HW)) {           // Acccelerometer.
         if (SBMA.isDoubleClick()) return 9;  // Double Tap.
         else if (SBMA.isTilt()) return 10;  // Wrist Tilt.
     }
 #endif
-    if (LB > 0 && LB != HB) HB=LB;
+    if (LB > 0 && LB != HB && GSR_PIN_RTC != 255) HB=LB; // V3 doesn't allow custom buttons at boot time.
     return HB;
 }
 
@@ -3816,8 +3876,10 @@ uint8_t WatchyGSR::getSWValue(bool SW1, bool SW2, bool SW3, bool SW4){
         T = SW1; SW1=SW4; SW4=T;
         T = SW3; SW3=SW2; SW2=T;
     }
+if ((SW1 | SW2 | SW3 | SW4)){
+}
     if (SW3 && SW1) return 5;
-    if (SW3 && SW2) return 6;
+    if (SW3 && SW2 && HWVer != 3.0f) return 6;
     if (SW4 && SW1) return 7;
     if (SW4 && SW2) return 8;
     if (SW1) return 1;
@@ -3883,7 +3945,7 @@ void WatchyGSR::processWiFiRequest(){
     }
 
     if (WiFiInProgress()) {
-        if (getButtonPins() != 2) OTATimer = millis(); // Not pressing "BACK".
+        if (WatchyGSR::getButtonPins() != 2) OTATimer = millis(); // Not pressing "BACK".
         if (millis() - OTATimer > 10000 || millis() > OTAFail || IsEndOTA()) OTAEnd = true; // Fail if holding back for 10 seconds OR 600 seconds has passed.
     }
 
@@ -4258,7 +4320,11 @@ void WatchyGSR::StoreSettings(String FromUser){
         Options.TwentyFour = (V & 1) ? true : false;
         Options.LightMode = (V & 2) ? true : false;
         Options.Feedback = (V & 4) ? true : false;
+#ifdef GxEPD2DarkBorder
         Options.Border = (V & 8) ? true : false;
+#else
+        Options.Border = false;
+#endif
         Options.Lefty = (V & 16) ? true : false;
         Options.Swapped = (V & 32) ? true : false;
         Options.Orientated = (V & 64) ? true : false;
@@ -4276,6 +4342,7 @@ void WatchyGSR::StoreSettings(String FromUser){
          J++; if (L > J){
             V = ((O[J] & 240) >> 4); Options.Performance = constrain(V,0,2);
             Options.SleepStyle = constrain((O[J] & 7),0,4);
+            if (Options.SleepStyle && HWVer == 3.0f) Options.SleepStyle = 2;
 #ifndef STABLEBMA_H_INCLUDED
             if (Options.SleepStyle) Options.SleepStyle = 2;
 #endif
@@ -4517,12 +4584,12 @@ void WatchyGSR::Reboot(){
 }
 
 bool WatchyGSR::OTA(){
-    esp_partition_iterator_t IT = esp_partition_find(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
+    esp_partition_iterator_t IT = esp_partition_find(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_1, NULL);
     if (IT != NULL){
       const esp_partition_t *Part = esp_partition_get(IT);
       uint64_t Size = Part->size;
       esp_partition_iterator_release(IT);
-      return (Size == 0x1E0000);
+      return (Size >= 0x1E0000);
     }
     return false;
 }
@@ -4536,8 +4603,12 @@ uint8_t WatchyGSR::getTXOffset(wifi_power_t Current){
 }
 
 void WatchyGSR::DisplayInit(bool ForceDark){
-  setDarkBorder(Options.Border | ForceDark);
+#ifdef GxEPD2DarkBorder
+  display.epd2.setDarkBorder(Options.Border | ForceDark);
+#endif
   if (Updates.Init){
+    WatchyGSR::hspi.begin(GSR_PIN_SCK,GSR_PIN_MISO,GSR_PIN_MOSI,GSR_PIN_SS);
+    display.epd2.selectSPI(hspi, SPISettings(20000000, MSBFIRST, SPI_MODE0));
     display.init(0,Rebooted,10,true);  // Force it here so it fixes the border.
     Updates.Init=false;
     Rebooted=false;
