@@ -10,7 +10,7 @@ src folder contains a universal (Arduino & PlatformIO) setup for compilation, in
 
 WatchFace Addons contains an EmptyAddOn.h (so you can use it as a template for making your own), an EmptyGameAddOn.h as well as 2 stock Watchy_GSR WatchFaces (Ballsy & LCD).
 
-Needed libraries:  Arduino Libraries, ArduinoOTA (included in ESP32 2.0.13), SmallRTC (2.3.7 or greater, GuruSR), SmallNTP (GuruSR), StableBMA (GuruSR), Olson2POSIX (GuruSR) AND Watchy (1.4.7 or greater) base.
+Needed libraries:  Arduino Libraries, ArduinoOTA (included in ESP32 2.0.13), SmallRTC (2.3.7 or greater, GuruSR), SmallNTP (GuruSR), StableBMA (GuruSR), Olson2POSIX (GuruSR) AND Watchy (1.4.14 or greater) base.
 
 **NOTES:**
 - V1 to V2 Watchy: Watchy should use version 2.0.13 of the ESP32 libraries, 3.0.2 can be used but causes a much larger binary and requires ESP-IDF 5.1 or greater (which is a manual install).
