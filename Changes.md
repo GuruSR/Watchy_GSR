@@ -243,3 +243,11 @@
 **Version 1.4.7G:**
 - **ADD:**  Added the GxEPD driver with direct changes to the code base (sadly, as the driver should allow late binding).
 - **FIX:**  Moved the chip detection to the GxEPD driver code to hopefully properly setup for V3.
+
+**Version 1.4.7H:**
+- **REM:**  Removed the GxEPD driver code duplication, users wanting Dark border need to do the patch again.
+- **FIX:**  Fixed the display code for V1 to V2, now all versions work properly.
+- **REM:**  Removed the detection of the USB as it was causing constant boots flip-flopping the detection bit.
+- **REM:**  Temporarily removed the BMA Tilt and Double Tap, since it doesn't appear to work the same with this BMA (may need more info).
+- **FIX:**  Fixed NTP being run multiple times in a row.
+- **ADD:**  V3 supported.
