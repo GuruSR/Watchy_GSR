@@ -733,7 +733,7 @@ void WatchyGSR::init(String datetime){
               }
 
               if (Darkness.Went && Options.NeedsSaving) RecordSettings();
-              if (HWVer = 3.0f) CheckButtons();
+//              if (HWVer == 3.0f) CheckButtons();
 
               if (!Updates.Init && !SoundActive() && !(InTurbo() || B)) DisplaySleep();
             }
@@ -2829,7 +2829,7 @@ void WatchyGSR::handleButtonPress(uint8_t Pressed){
               switch (Menu.SubItem){
                   case 1: // Style.
 #ifdef STABLEBMA_H_INCLUDED
-                      if (HWVer = 3.0f){
+                      if (HWVer == 3.0f){
                           if (Options.SleepStyle != 2) Options.SleepStyle = 2;
                           else Options.SleepStyle = 0;
                       }else Options.SleepStyle = roller(Options.SleepStyle + 1, 0, 4);
