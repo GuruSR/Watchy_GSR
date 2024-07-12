@@ -453,6 +453,7 @@ void WatchyGSR::init(String datetime){
             Battery.DarkState = 0;
             Battery.Direction = -1;
             Battery.DarkDirection = 0;
+            Battery.Read = getBatteryVoltage();
             for (I = 0; I < 5; I++){
               Battery.ReadFloat[I].Voltage = rawBatteryVoltage();
               Battery.ReadFloat[I].Stamp = WatchTime.UTC_RAW - WatchTime.UTC.Second;
