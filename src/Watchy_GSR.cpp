@@ -226,6 +226,7 @@ RTC_DATA_ATTR struct WeatherGSR final {
    uint8_t State;          /* Like NTP State 0 = idle, 1 = asking for WiFi, 2 = asking for code, 3 = got code or error. */
    uint8_t Wait;           /* Counts up to 3 minutes, then fails. */
    uint8_t Pause;          /* How many 50ms to pause for. */
+   time_t goneStale;       /* If time goes past this, the weather data is STALE */
    struct Weatherinfo {
      uint16_t ID;          /* ID from open-medeo.com */
      struct TempsGSR {
@@ -447,13 +448,12 @@ void WatchyGSR::init(String datetime){
             Battery.FloatBottom = 0;
             Battery.FloatTop = 4;
             if (OkNVS(GName)){ B = NVS.getString(Bugh,S); Battery.Ugh = (S > ""); }
-            Battery.Divider = (HWVer == 3.0f ? 7.826f : 5.0f); // 7.34694 vs 7.826
-            Battery.Divider2 = (HWVer == 3.0f ? 782.608f : 500.0f);  //734.693 vs 782.608
+            Battery.Divider = (HWVer == 3.0f ? 7.39750f : 5.0f); // 7.39750 vs 7.826
+            Battery.Divider2 = (HWVer == 3.0f ? 739.750f : 500.0f);  //739.750 vs 782.608
             Battery.State = 0;
             Battery.DarkState = 0;
             Battery.Direction = -1;
             Battery.DarkDirection = 0;
-            Battery.Read = getBatteryVoltage();
             for (I = 0; I < 5; I++){
               Battery.ReadFloat[I].Voltage = rawBatteryVoltage();
               Battery.ReadFloat[I].Stamp = WatchTime.UTC_RAW - WatchTime.UTC.Second;
@@ -531,6 +531,7 @@ void WatchyGSR::init(String datetime){
         ActiveMode = true;
         RefreshCPU((Darkness.Went && GuiMode != GSR_MENUON && WatchTime.BedTime) ? GSR_CPULOW : 0); // Use low CPU usage at night.
         Battery.Start = golow(getBatteryVoltage(),4.22);
+        Battery.Read = Battery.Start;
         KeysStart();
         while(ActiveMode || UpdateDisp || WfNM){
               Since=millis();
@@ -762,7 +763,7 @@ void WatchyGSR::init(String datetime){
 
 void WatchyGSR::StartWeb(){
     /*return index page which is stored in basicIndex */
-    server.on("/", HTTP_GET, [=]() {
+    server.on("/", HTTP_GET, [=, this]() {
       server.sendHeader("Connection", "close");
       String S = basicIndex;
       S.replace("{%^%}",(OTA() ? basicOTA : ""));
@@ -770,26 +771,26 @@ void WatchyGSR::StartWeb(){
       server.send(200, "text/html", S);
       ResetOTA();
     });
-    server.on("/settings", HTTP_GET, [=]() {
+    server.on("/settings", HTTP_GET, [=,this]() {
       String S = LGSR.LangString(settingsIndex,true,Options.LanguageID,5,6);
       S.replace("{??}",GetSettings());
       server.sendHeader("Connection", "close");
       server.send(200, "text/html", S);
       ResetOTA();
     });
-    server.on("/wifi", HTTP_GET, [=]() {
+    server.on("/wifi", HTTP_GET, [=, this]() {
       server.sendHeader("Connection", "close");
       server.send(200, "text/html", buildWiFiAPPage());
       ResetOTA();
     });
-    server.on("/update", HTTP_GET, [=]() {
+    server.on("/update", HTTP_GET, [=, this]() {
       if (OTA()){
         server.sendHeader("Connection", "close");
         server.send(200, "text/html", LGSR.LangString(updateIndex,true,Options.LanguageID,8,13));
         ResetOTA();
       }
     });
-    server.on("/weather", HTTP_GET, [=]() {
+    server.on("/weather", HTTP_GET, [=, this]() {
       String S = LGSR.LangString(weatherIndex,true,Options.LanguageID,6,23);
       String T = (WeatherData.UseStaticPOS ? makeGeo(String(WeatherData.StaticLat,6),true) : "");
       S.replace("{%1%}",T);
@@ -799,7 +800,7 @@ void WatchyGSR::StartWeb(){
       server.send(200, "text/html", S);
       ResetOTA();
     });
-    server.on("/", HTTP_POST, [=]() {
+    server.on("/", HTTP_POST, [=, this]() {
       server.sendHeader("Connection", "close");
       String S = basicIndex;
       S.replace("{%^%}",(OTA() ? basicOTA : ""));
@@ -807,19 +808,19 @@ void WatchyGSR::StartWeb(){
       server.send(200, "text/html", S);
       ResetOTA();
     });
-    server.on("/exit", HTTP_GET, [=]() {
+    server.on("/exit", HTTP_GET, [=, this]() {
       server.sendHeader("Connection", "close");
       server.send(200, "text/html", LGSR.LangString(basicIndexDone,true,Options.LanguageID,1,21));
       if (WatchyAPOn && Menu.Item == GSR_MENU_WIFI) { Menu.SubItem = 5; UpdateDisp |= Showing(); }
       ResetOTA(); EndOTA(3);
     });
-    server.on("/settings", HTTP_POST, [=](){
+    server.on("/settings", HTTP_POST, [=, this](){
         if (server.argName(0) == "settings") { StoreSettings(server.arg(0)); if (Options.WatchFaceStyle > WatchStyles.Count - 1) Options.WatchFaceStyle = 0; Options.NeedsSaving = true ; WatchFaceStart(Options.WatchFaceStyle, true); }
         server.sendHeader("Connection", "close");
         server.send(200, "text/html", LGSR.LangString(settingsDone,true,Options.LanguageID,5,19));
         ResetOTA();
     });
-    server.on("/wifi", HTTP_POST, [=](){
+    server.on("/wifi", HTTP_POST, [=, this](){
         uint8_t I = 0;
         while (I < server.args()){
             parseWiFiPageArg(server.argName(I),server.arg(I)); I++;
@@ -829,7 +830,7 @@ void WatchyGSR::StartWeb(){
         Options.NeedsSaving = true;
         ResetOTA();
     });
-    server.on("/weather", HTTP_POST, [=](){
+    server.on("/weather", HTTP_POST, [=, this](){
         String S = ""; if (server.argName(0) == "lat") S = makeGeo(server.arg(0),true);
         String T = ""; if (server.argName(1) == "lon") T = makeGeo(server.arg(1),false);
         server.sendHeader("Connection", "close"); ResetOTA();
@@ -847,11 +848,11 @@ void WatchyGSR::StartWeb(){
         Options.NeedsSaving = true;
         server.send(200, "text/html", LGSR.LangString(weatherDone,true,Options.LanguageID,1,21)); 
     });
-    server.on("/update", HTTP_POST, [=](){
+    server.on("/update", HTTP_POST, [=, this](){
       server.sendHeader("Connection", "close");
       server.send(200, "text/plain", (Update.hasError()) ? "Upload Failed." : "Watchy will reboot!");
       Reboot();
-    }, [=]() {
+    }, [=, this]() {
       HTTPUpload& upload = server.upload();
       if (upload.status == UPLOAD_FILE_START) {
         ResetOTA();
@@ -1660,7 +1661,7 @@ void WatchyGSR::detectBattery(){
         }
     }else {
         B = Battery.Charge;
-        Battery.Charge = (analogRead(GSR_PIN_STAT) * 0.80586 > 3200 && digitalRead(GSR_PIN_USB_DET));
+        Battery.Charge = (analogRead(GSR_PIN_STAT) * 0.80586 > 3200); // && digitalRead(GSR_PIN_USB_DET)
         Battery.Read = rawBatteryVoltage() / 100; Battery.Level = (Battery.Charge ? 2 : -2);
         if (B != Battery.Charge) { Updates.Drawn = true; UpdateDisp |= Showing(); }
         B = false;
@@ -4634,7 +4635,7 @@ void WatchyGSR::StartWeather(){
   }
 }
 
-bool WatchyGSR::IsWeatherAvailable() { return WeatherData.Ready; }
+bool WatchyGSR::IsWeatherAvailable() { return (WatchTime.UTC_RAW < WeatherData.goneStale && WeatherData.Ready); }
 int WatchyGSR::GetWeatherTemperature(){
   int T = 255;
   if (WeatherData.Ready) T = int(WeatherData.Weather.Temperature.Current); else T = SRTC.temperature();
@@ -4830,6 +4831,7 @@ void WatchyGSR::ProcessWeather(){
             WeatherData.Weather.SunSet = getISO8601(S);
             S = CleanString(JSON.stringify(root["hourly"]["visibility"]));
             WeatherData.Weather.Visibility = uint32_t(S.toInt());
+            WeatherData.goneStale = WatchTime.UTC_RAW + 7200; // 2hr stale time on weather.
             WeatherData.Ready = true;
         }
         WeatherData.Pause = 0;
@@ -4854,13 +4856,18 @@ void WatchyGSR::ProcessWeather(){
 
 void WatchyGSR::GSRWebGet(void * parameter){
 vTaskDelay(10/portTICK_PERIOD_MS);
-int I = 0;
+int tmp = 0;
+int len = 0;
+int cnt = 0;
+size_t size = 0;
+uint8_t buff[512] = {0};
+WiFiClient *netstream;
 GSRWebData.Response = 0;
 GSRWebData.Ready = false;
 GSRWebData.Data = "";
 bool Good = ((WatchStyles.Options[Options.WatchFaceStyle] & GSR_AFW) && WiFi.status() == WL_CONNECTED);
 bool Sent = false;
-uint16_t webTimeout = (golow(GSRWebData.secTimeout, 1) + 1) * 1000;
+uint16_t webTimeout = (golow(GSRWebData.secTimeout, 29) + 1) * 1000;
 unsigned long Stay = millis() + webTimeout;
     while (Good && millis() < Stay){
         Good = ((WatchStyles.Options[Options.WatchFaceStyle] & GSR_AFW) && WiFi.status() == WL_CONNECTED);
@@ -4870,16 +4877,36 @@ unsigned long Stay = millis() + webTimeout;
             vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
         }
         if (GSRWebData.Response == HTTP_CODE_OK) {
-            vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
-            GSRWebData.Data= HTTP.getString();
-            vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
-            GSRWebData.Ready = true;
-            vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
+            len = HTTP.getSize();
+            netstream = HTTP.getStreamPtr();
+            while (HTTP.connected() && Good && (len > 0 || len == -1) && millis() < Stay) {
+              size = netstream->available();
+              if (size) {
+                cnt = netstream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
+                if (cnt){
+                  GSRWebData.Data += String((const char*)buff).substring(0,cnt - 1);
+                  Stay = millis() + webTimeout;
+                }
+                if (len == -1) {
+                    Good = !(size > 0 && !(size - cnt));
+                } else if (len > 0) {
+                  len -= cnt;
+                }
+              }
+              vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
+            }
+            if (len == -1) {
+              cnt = GSRWebData.Data.indexOf("\x0a");
+              if (cnt && cnt + 1 < GSRWebData.Data.length()) {
+                  GSRWebData.Data = GSRWebData.Data.substring(cnt + 1);
+              }
+            }
+            GSRWebData.Ready = GSRWebData.Data.length();
             Good = false;
         }
         if (Good) vTaskDelay(100/portTICK_PERIOD_MS);    // 100ms pauses.
         if (Good && !inBrownOut()) {
-            I = HTTP.GET(); if (I) { GSRWebData.Response = I; if (I != HTTP_CODE_OK) { LastWebError = I; Good = false; } }
+            tmp = HTTP.GET(); if (tmp) { GSRWebData.Response = tmp; if (tmp != HTTP_CODE_OK) { LastWebError = tmp; Good = false; } }
         }
     }
     HTTP.end();
