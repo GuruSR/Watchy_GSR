@@ -251,3 +251,8 @@
 - **REM:**  Temporarily removed the BMA Tilt and Double Tap, since it doesn't appear to work the same with this BMA (may need more info).
 - **FIX:**  Fixed NTP being run multiple times in a row.
 - **ADD:**  V3 supported.
+
+**Version 1.4.7I:**
+- **FIX:**  Fixed GSRWebGet, it now properly obtains the results and can now have longer timeouts (20 second max programmed in).
+- **FIX:**  Altered the divider for V3, hopefully it'll represent the battery level better.
+- **PAR:**  Partial fix with the charging indicator on V3, to see if it will behave better, may end up going to the V1-V2 solution.
