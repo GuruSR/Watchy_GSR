@@ -262,3 +262,6 @@
 - **FIX:**  GSRWebGet is now thread safe and capable of longer delay times when attempting to retrieve data, will also fail instantly if the transmission of the URL fails.
 - **FIX:**  Olson2POSIX change to allow Olson2POSIX to use the same WiFi Client as Watchy GSR to reduce overhead and increase performance.
 - **FIX:**  All tasks stack sizes have been reduced to work properly during Verbose debugging (strains stack), should now have a much lower footprint for memory.
+
+**Version 1.4.7K:**
+- **FIX:**  Weather code now only accepts validated weather IDs from Open Meteo.  WeatherIcons will not receive wrong weather IDs.
