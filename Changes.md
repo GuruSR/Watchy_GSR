@@ -256,3 +256,9 @@
 - **FIX:**  Fixed GSRWebGet, it now properly obtains the results and can now have longer timeouts (20 second max programmed in).
 - **FIX:**  Altered the divider for V3, hopefully it'll represent the battery level better.
 - **PAR:**  Partial fix with the charging indicator on V3, to see if it will behave better, may end up going to the V1-V2 solution.
+
+**Version 1.4.7J:**
+- **FIX:**  Open Meteo sometimes returns invalid weather codes, the WeatherIcons.h will return a nullptr, Watchy Classic AddOns now detects the nullptr and won't draw an icon.
+- **FIX:**  GSRWebGet is now thread safe and capable of longer delay times when attempting to retrieve data, will also fail instantly if the transmission of the URL fails.
+- **FIX:**  Olson2POSIX change to allow Olson2POSIX to use the same WiFi Client as Watchy GSR to reduce overhead and increase performance.
+- **FIX:**  All tasks stack sizes have been reduced to work properly during Verbose debugging (strains stack), should now have a much lower footprint for memory.
