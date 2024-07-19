@@ -44,7 +44,8 @@
 // Place all of your data here.  All Fonts and Image Data goes below this line and before the Variables.
 
 // ICONS
-
+#ifndef SSEG_BATTERY
+#define SSEG_BATTERY
 // 'battery', 37x21px
 const unsigned char SSEG_battery [] PROGMEM = {
 	0x3f, 0xff, 0xff, 0xff, 0x80, 0x7f, 0xff, 0xff, 0xff, 0xc0, 0xff, 0xff, 0xff, 0xff, 0xe0, 0xe0,
@@ -55,6 +56,10 @@ const unsigned char SSEG_battery [] PROGMEM = {
 	0xe0, 0x00, 0x00, 0x00, 0xe0, 0xe0, 0x00, 0x00, 0x00, 0xe0, 0xff, 0xff, 0xff, 0xff, 0xe0, 0x7f,
 	0xff, 0xff, 0xff, 0xc0, 0x3f, 0xff, 0xff, 0xff, 0x80
 };
+#endif
+
+#ifndef SSEG_STEPS
+#define SSEG_STEPS
 // 'steps', 19x23px
 const unsigned char SSEG_steps [] PROGMEM = {
 	0x00, 0x03, 0xc0, 0x00, 0x07, 0xe0, 0x00, 0x07, 0xe0, 0x00, 0x0f, 0xe0, 0x78, 0x0f, 0xe0, 0xfc,
@@ -63,9 +68,11 @@ const unsigned char SSEG_steps [] PROGMEM = {
 	0x20, 0x1f, 0x00, 0x06, 0x0f, 0x00, 0x3e, 0x0e, 0x00, 0x3e, 0x00, 0x00, 0x3f, 0x00, 0x00, 0x1e,
 	0x00, 0x00, 0x1e, 0x00, 0x00
 };
-
+#endif
 // FONTS
 
+#ifndef DSEG7_CLASSIC_BOLD_53
+#define DSEG7_CLASSIC_BOLD_53
 const uint8_t DSEG7_Classic_Bold_53Bitmaps[] PROGMEM = {
 
     // Bitmap Data:
@@ -1467,7 +1474,10 @@ const GFXglyph DSEG7_Classic_Bold_53Glyphs[] PROGMEM = {
 const GFXfont DSEG7_Classic_Bold_53 PROGMEM = {
     (uint8_t *)DSEG7_Classic_Bold_53Bitmaps,
     (GFXglyph *)DSEG7_Classic_Bold_53Glyphs, 0x20, 0x7E, 58};
+#endif
 
+#ifndef DSEG7_CLASSIC_BOLD_25
+#define DSEG7_CLASSIC_BOLD_25
 const uint8_t DSEG7_Classic_Bold_25Bitmaps[] PROGMEM = {
 
   // Bitmap Data:
@@ -1665,7 +1675,10 @@ const GFXglyph DSEG7_Classic_Bold_25Glyphs[] PROGMEM = {
 };
 const GFXfont DSEG7_Classic_Bold_25 PROGMEM = {
 (uint8_t  *)DSEG7_Classic_Bold_25Bitmaps,(GFXglyph *)DSEG7_Classic_Bold_25Glyphs,0x20, 0x7E, 28};
+#endif
 
+#ifndef DSEG7_CLASSIC_REGULAR_39
+#define DSEG7_CLASSIC_REGULAR_39
 const uint8_t DSEG7_Classic_Regular_39Bitmaps[] PROGMEM = {
 
   // Bitmap Data:
@@ -1863,7 +1876,10 @@ const GFXglyph DSEG7_Classic_Regular_39Glyphs[] PROGMEM = {
 };
 const GFXfont DSEG7_Classic_Regular_39 PROGMEM = {
 (uint8_t  *)DSEG7_Classic_Regular_39Bitmaps,(GFXglyph *)DSEG7_Classic_Regular_39Glyphs,0x20, 0x7E, 43};
+#endif
 
+#ifndef SEVEN_SEGMENT10PT7B
+#define SEVEN_SEGMENT10PT7B
 const uint8_t Seven_Segment10pt7bBitmaps[] PROGMEM = {
   0x00, 0xFF, 0xFC, 0xA0, 0x09, 0x05, 0x86, 0x9F, 0xF1, 0x47, 0xFC, 0xB0,
   0xD0, 0x48, 0x00, 0x10, 0x10, 0x7E, 0x80, 0x80, 0x80, 0x80, 0x80, 0x7E,
@@ -2066,7 +2082,9 @@ const GFXfont Seven_Segment10pt7b PROGMEM = {
   (uint8_t  *)Seven_Segment10pt7bBitmaps,
   (GFXglyph *)Seven_Segment10pt7bGlyphs,
   0x20, 0x7E, 20 };
-
+#endif
+#ifndef PX437_IBM_BIOS5PT7B
+#define PX437_IBM_BIOS5PT7B
 const uint8_t Px437_IBM_BIOS5pt7bBitmaps[] PROGMEM = {
   0x00, 0x73, 0xFF, 0xF7, 0x39, 0xC0, 0x70, 0xEF, 0xDF, 0xBF, 0x70, 0x77,
   0x3B, 0x9D, 0xDF, 0xF7, 0x77, 0xFF, 0xDC, 0xEE, 0x77, 0x00, 0x38, 0x3F,
@@ -2234,7 +2252,10 @@ const GFXfont Px437_IBM_BIOS5pt7b PROGMEM = {
   (uint8_t  *)Px437_IBM_BIOS5pt7bBitmaps,
   (GFXglyph *)Px437_IBM_BIOS5pt7bGlyphs,
   0x20, 0x7E, 10 };
+#endif
 
+#ifndef WATCHYCLASSIC_POKEMON
+#define WATCHYCLASSIC_POKEMON
 // 'Pokemon', 200x200px
 const unsigned char WatchyClassic_Pokemon [] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -2551,7 +2572,10 @@ const unsigned char WatchyClassic_Pokemon [] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
+#endif
 
+#ifndef FREEMONOBOLD9PT7B
+#define FREEMONOBOLD9PT7B
 const uint8_t FreeMonoBold9pt7bBitmaps[] PROGMEM = {
     0xFF, 0xFF, 0xD2, 0x1F, 0x80, 0xEC, 0x89, 0x12, 0x24, 0x40, 0x36, 0x36,
     0x36, 0x7F, 0x7F, 0x36, 0xFF, 0xFF, 0x3C, 0x3C, 0x3C, 0x00, 0x18, 0xFF,
@@ -2738,7 +2762,10 @@ const GFXglyph FreeMonoBold9pt7bGlyphs[] PROGMEM = {
 const GFXfont FreeMonoBold9pt7b PROGMEM = {(uint8_t *)FreeMonoBold9pt7bBitmaps,
                                            (GFXglyph *)FreeMonoBold9pt7bGlyphs,
                                            0x20, 0x7E, 18};
+#endif
 
+#ifndef MADE_SUNFLOWER_PERSONAL_USE39PT7B
+#define MADE_SUNFLOWER_PERSONAL_USE39PT7B
 const uint8_t MADE_Sunflower_PERSONAL_USE39pt7bBitmaps[] PROGMEM = {
   0x00, 0x07, 0xE0, 0x1F, 0xF8, 0x3F, 0xFC, 0x7F, 0xFE, 0x7F, 0xFE, 0xFF,
   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0x7F,
@@ -4749,8 +4776,10 @@ const GFXfont MADE_Sunflower_PERSONAL_USE39pt7b PROGMEM = {
   (uint8_t  *)MADE_Sunflower_PERSONAL_USE39pt7bBitmaps,
   (GFXglyph *)MADE_Sunflower_PERSONAL_USE39pt7bGlyphs,
   0x20, 0x7E, 93 };
+#endif
 
-
+#ifndef STARRYSTAR
+#define STARRYSTAR
 // pre-generated random star field
 // run initStars to re-generate with different params
 const StarryStar STARS[] PROGMEM = {
@@ -5655,7 +5684,10 @@ const StarryStar STARS[] PROGMEM = {
   { 96, 184, 2 },
   { -25, 225, 2 },
 };
+#endif
 
+#ifndef FREESANSBOLD9PT7B
+#define FREESANSBOLD9PT7B
 const uint8_t FreeSansBold9pt7bBitmaps[] PROGMEM = {
     0xFF, 0xFF, 0xFE, 0x48, 0x7E, 0xEF, 0xDF, 0xBF, 0x74, 0x40, 0x19, 0x86,
     0x67, 0xFD, 0xFF, 0x33, 0x0C, 0xC3, 0x33, 0xFE, 0xFF, 0x99, 0x86, 0x61,
@@ -5861,13 +5893,15 @@ const GFXglyph FreeSansBold9pt7bGlyphs[] PROGMEM = {
 const GFXfont FreeSansBold9pt7b PROGMEM = {(uint8_t *)FreeSansBold9pt7bBitmaps,
                                            (GFXglyph *)FreeSansBold9pt7bGlyphs,
                                            0x20, 0x7E, 22};
+#endif
 
 #define STAR_COUNT 900
 
 const int horizonY = 150;
 const int planetR = 650;
 
-
+#ifndef TETRISBITMAPS
+#define TETRISBITMAPS
 // 'dither_it_tetris_0', 40x60px
 const unsigned char tetris0 [] PROGMEM = {
   0xff, 0xff, 0xff, 0xff, 0xff, 0xd5, 0x75, 0x5d, 0x57, 0x55, 0x80, 0xe0, 0x38, 0x0e, 0x03, 0xc0, 
@@ -6406,7 +6440,10 @@ const unsigned char tetrisbg [] PROGMEM = {
 };
 
 const unsigned char *tetris_nums [10] = {tetris0, tetris1, tetris2, tetris3, tetris4, tetris5, tetris6, tetris7, tetris8, tetris9};
+#endif
 
+#ifndef MACBITMAPS
+#define MACBITMAPS
 // 'colon', 11x31px
 const unsigned char Mac_colon [] PROGMEM = {
   0x00, 0x00, 0x07, 0x00, 0x0f, 0xc0, 0x1f, 0xc0, 0x3f, 0xc0, 0x3f, 0xc0, 0x3f, 0xc0, 0x1f, 0xc0, 
@@ -6922,7 +6959,10 @@ const unsigned char Mac_window [] PROGMEM = {
 };
 
 const unsigned char *Mac_numbers [10] = {Mac_numbers0, Mac_numbers1, Mac_numbers2, Mac_numbers3, Mac_numbers4, Mac_numbers5, Mac_numbers6, Mac_numbers7, Mac_numbers8, Mac_numbers9};
+#endif
 
+#ifndef MARIOBITMAPS
+#define MARIOBITMAPS
 // '0', 44x44px
 const unsigned char mario0 [] PROGMEM = {
   0x0f, 0xff, 0xff, 0xff, 0xff, 0x00, 0x0f, 0xff, 0xff, 0xff, 0xff, 0x00, 0x35, 0x55, 0x55, 0x55, 
@@ -7525,6 +7565,7 @@ const unsigned char mariopipe [] PROGMEM = {
 };
 
 const unsigned char *marionumbers [10] = {mario0, mario1, mario2, mario3, mario4, mario5, mario6, mario7, mario8, mario9};
+#endif
 
 #define NUM_W 44
 #define NUM_H 44
@@ -7631,6 +7672,9 @@ class WatchyClassicsAddOnClass : public WatchyGSR {
           Design.Status.BatteryInverted = false;
           Design.Status.BATTx = 154;
           Design.Status.BATTy = 73;
+      } else if (StyleID == WatchyClassicsAddOnMarioStyle){
+          Design.Status.WIFIy = 163;
+          Design.Status.BATTy = 148;
       }
     };
 
@@ -7667,9 +7711,11 @@ class WatchyClassicsAddOnClass : public WatchyGSR {
           display.print(WatchTime.Local.Day);
           display.setCursor(5, 150);
           display.println(WatchTime.Local.Year + SRTC.getLocalYearOffset());// offset from 1970, since year is stored in uint8_t
+          if (BMAAvailable()){
           display.drawBitmap(10, 165, SSEG_steps, 19, 23, ForeColor(), BackColor());
           display.setCursor(35, 190);
           display.print(CurrentStepCount());
+          }
           drawWeather();
           if (IsBatteryHidden()){
               float blow = SRTC.getRTCBattery(true);
@@ -7792,7 +7838,9 @@ class WatchyClassicsAddOnClass : public WatchyGSR {
                 else { display.setFont(&DSEG7_Classic_Bold_25); display.setCursor(159 - w - x1, 136); }
                 display.print(T);
                 display.drawBitmap(165, 110, getTemperatureScaleIcon(IsMetric()), 26, 20, ForeColor(), BackColor());
-                display.drawBitmap(145, 158, weatherIcon, 48, 32, ForeColor(), BackColor());
+                if (weatherIcon != nullptr){
+                    display.drawBitmap(145, 158, weatherIcon, 48, 32, ForeColor(), BackColor());
+                }
             }
         }
     };
