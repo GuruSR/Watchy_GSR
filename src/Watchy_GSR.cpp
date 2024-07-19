@@ -4788,7 +4788,6 @@ void WatchyGSR::ProcessWeather(){
       if (!GetWebAvailable()) break;  // Break out incase a URL request is going.
       WeatherData.Pause = 1;
       setStatus("WE");
-      //if (!AskForWeb("http://api.open-meteo.com/v1/forecast?latitude=53.5461&longitude=113.4937&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=visibility&daily=sunrise,sunset&timezone=UTC&forecast_days=1&forecast_hours=1")){
       if (!AskForWeb("http://api.open-meteo.com/v1/forecast?latitude=" + String(WeatherData.LastLat,6) + "&longitude=" + String(WeatherData.LastLon,6) + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=visibility&daily=sunrise,sunset&timezone=UTC&forecast_days=1&forecast_hours=1")){
           WeatherData.State = 99;
       }else{
