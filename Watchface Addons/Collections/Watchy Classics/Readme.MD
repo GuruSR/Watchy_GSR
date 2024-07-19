@@ -16,4 +16,5 @@ Be sure to like the watch faces on their original Githubs to show the apprecatio
 **NOTE:** You will need the WeatherIcons.h (in Watchface Addons folder) along with this file in your project folder to compile, merely add this file after all the #includes in GSR.ino:
 
 #include "WeatherIcons.h"
+
 #include "WatchyClassicsAddOn.h"
