@@ -7,6 +7,7 @@
   #define SMALL_RTC_NO_PCF8563
 #endif
 #include <core_version.h>
+#include <string>
 #include "Defines_GSR.h"
 #include "Web-HTML.h"
 #include <Arduino_JSON.h>
@@ -40,7 +41,7 @@ class WatchyGSR{
         static SmallNTP SNTP;
         static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
         static SPIClass hspi;
-        static constexpr const char* Build = "1.4.7I";
+        static constexpr const char* Build = "1.4.7J";
         enum DesOps {dSTATIC, dLEFT, dRIGHT, dCENTER};
 
     public:

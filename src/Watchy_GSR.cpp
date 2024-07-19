@@ -285,7 +285,7 @@ RTC_DATA_ATTR     uint8_t   Alarms_Playing[4];        // Means the alarm tripped
 RTC_DATA_ATTR     uint8_t   Alarms_Repeats[4];        // 0-4 (20-80%) reduction in repetitions.
 //} Alarms[4];
 
-WiFiClient WiFiC;   // Tz
+WiFiClient WiFiC;   // GSRWebGet
 HTTPClient HTTP;    // Tz
 Olson2POSIX OP;     // Tz code.
 WebServer server(80);
@@ -1877,7 +1877,11 @@ void WatchyGSR::ProcessNTP(){
       NTPData.State++;
       setStatus("TZ");
       // Do the next part.
-      OP.beginOlsonFromWeb();
+      if (!OP.beginOlsonFromWeb(WiFiC)){
+          NTPData.Pause = 0;
+          NTPData.State = 99;
+          break;
+      }
       NTPData.Wait = 0;
       NTPData.tWait = millis() + 4000;
       NTPData.Pause = 1;
@@ -2048,7 +2052,7 @@ void WatchyGSR::VibeTo(bool Mode){
     }
 }
 
-void WatchyGSR::SoundBegin() { if (SoundHandle == NULL) { SoundRet = xTaskCreate(WatchyGSR::SoundAlarms,"WatchyGSR_Alarming",20480,NULL,(configMAX_PRIORITIES - 2),&SoundHandle); SoundStart = false; } }
+void WatchyGSR::SoundBegin() { if (SoundHandle == NULL) { SoundRet = xTaskCreate(WatchyGSR::SoundAlarms,"WatchyGSR_Alarming",2048,NULL,(configMAX_PRIORITIES - 2),&SoundHandle); SoundStart = false; } }
 bool WatchyGSR::SoundActive() { return (SoundHandle != NULL); }
 
 void WatchyGSR::SoundAlarms(void * parameter){
@@ -3405,26 +3409,26 @@ tmElements_t WatchyGSR::UTCtoLocal(time_t Incoming){
 
 time_t WatchyGSR::getISO8601(String inTime){
     tmElements_t sunT;
-    String s;
-    uint i;
-    s=inTime.charAt(i);
-    if (s == "[") i++;
-    s=inTime.charAt(i);
-    if (s == " ") i++;
-    s = inTime.substring(i,i + 4);
-    sunT.Year = s.toInt();
-    i+=5;
-    s = inTime.substring(i,i + 2);
-    sunT.Month = s.toInt();
-    i+=3;
-    s = inTime.substring(i,i + 2);
-    sunT.Day = s.toInt();
-    i+=3;
-    s = inTime.substring(i,i + 2);
-    sunT.Hour = s.toInt();
-    i+=3;
-    s = inTime.substring(i,i + 2);
-    sunT.Minute = s.toInt();
+    struct tm tmout;
+    String tmp;
+    uint8_t ind;
+    tmp=inTime.charAt(ind);
+    if (tmp == "[") ind++;
+    tmp=inTime.charAt(ind);
+    if (tmp == " ") ind++;
+    if (ind) {
+        tmp=inTime.substring(ind);
+    }else {
+        tmp=inTime;
+    }
+    strptime(tmp.c_str(), "%Y-%m-%dT%H:%M", &tmout);
+    sunT.Second = 0;
+    sunT.Minute = tmout.tm_min;
+    sunT.Hour = tmout.tm_hour;
+    sunT.Wday = 0;
+    sunT.Day = tmout.tm_mday;
+    sunT.Month = tmout.tm_mon;
+    sunT.Year = tmout.tm_year - 70;
     return SRTC.doMakeTime(sunT);
 }
 
@@ -3831,7 +3835,7 @@ void WatchyGSR::monitorSteps(){
     }
 }
 
-void WatchyGSR::KeysStart() { if (KeysHandle == NULL) { KeysRet = xTaskCreate(WatchyGSR::KeysCheck,"WatchyGSR_KeysCheck",20480,NULL,(configMAX_PRIORITIES - 2),&KeysHandle); } }
+void WatchyGSR::KeysStart() { if (KeysHandle == NULL) { KeysRet = xTaskCreate(WatchyGSR::KeysCheck,"WatchyGSR_KeysCheck",1024,NULL,(configMAX_PRIORITIES - 2),&KeysHandle); } }
 void WatchyGSR::KeysStop() { while (KeysHandle != NULL) { KeysCheckOn = false; vTaskDelay(20/portTICK_PERIOD_MS); } }
 
 void WatchyGSR::KeysCheck(void * parameter){
@@ -4668,7 +4672,7 @@ bool WatchyGSR::AskForWeb(String website, uint8_t Timeout){
   if (!GetWebAvailable()) return false;
   GSRWebData.webURL = website;
   GSRWebData.secTimeout = Timeout;
-  GSRRet = xTaskCreate(WatchyGSR::GSRWebGet,"GSRWebGet",20480,NULL,(configMAX_PRIORITIES - 1),&GSRHandle);
+  GSRRet = xTaskCreate(WatchyGSR::GSRWebGet,"GSRWebGet",3072,NULL,(configMAX_PRIORITIES - 1),&GSRHandle);
   return (GSRHandle != NULL);
 }
 
@@ -4784,6 +4788,7 @@ void WatchyGSR::ProcessWeather(){
       if (!GetWebAvailable()) break;  // Break out incase a URL request is going.
       WeatherData.Pause = 1;
       setStatus("WE");
+      //if (!AskForWeb("http://api.open-meteo.com/v1/forecast?latitude=53.5461&longitude=113.4937&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=visibility&daily=sunrise,sunset&timezone=UTC&forecast_days=1&forecast_hours=1")){
       if (!AskForWeb("http://api.open-meteo.com/v1/forecast?latitude=" + String(WeatherData.LastLat,6) + "&longitude=" + String(WeatherData.LastLon,6) + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=visibility&daily=sunrise,sunset&timezone=UTC&forecast_days=1&forecast_hours=1")){
           WeatherData.State = 99;
       }else{
@@ -4873,7 +4878,7 @@ unsigned long Stay = millis() + webTimeout;
         Good = ((WatchStyles.Options[Options.WatchFaceStyle] & GSR_AFW) && WiFi.status() == WL_CONNECTED);
         if (!Sent && Good && !inBrownOut()) {
             vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
-            Sent = true; HTTP.setConnectTimeout(webTimeout); HTTP.begin(WiFiC, GSRWebData.webURL); 
+            Sent = true; HTTP.setConnectTimeout(webTimeout); Good = HTTP.begin(WiFiC, GSRWebData.webURL); 
             vTaskDelay(10/portTICK_PERIOD_MS);    // 10ms pauses.
         }
         if (GSRWebData.Response == HTTP_CODE_OK) {
@@ -4884,7 +4889,7 @@ unsigned long Stay = millis() + webTimeout;
               if (size) {
                 cnt = netstream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
                 if (cnt){
-                  GSRWebData.Data += String((const char*)buff).substring(0,cnt - 1);
+                  GSRWebData.Data += String((const char*)buff).substring(0,cnt);
                   Stay = millis() + webTimeout;
                 }
                 if (len == -1) {
