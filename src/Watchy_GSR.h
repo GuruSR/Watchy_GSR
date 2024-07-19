@@ -41,7 +41,7 @@ class WatchyGSR{
         static SmallNTP SNTP;
         static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
         static SPIClass hspi;
-        static constexpr const char* Build = "1.4.7J";
+        static constexpr const char* Build = "1.4.7K";
         enum DesOps {dSTATIC, dLEFT, dRIGHT, dCENTER};
 
     public:

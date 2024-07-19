@@ -11,6 +11,7 @@ char WiFiIDs[] PROGMEM = "ABCDEFGHIJ";
 int AlarmVBs[] = {0x01FE, 0x00CC, 0x01B6, 0x014A};
 const uint16_t Bits[10] = {1,2,4,8,16,32,64,128,256,512};
 const float Reduce[5] = {1.0,0.8,0.6,0.4,0.2};
+static uint16_t wIDs[28] = {0,1,2,3,45,48,51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,99}; // Weather IDs accepted.
 
 // Specific defines to this Watchy face.
 #define GName "GSR"
@@ -4697,6 +4698,8 @@ String WatchyGSR::makeGeo(String inGeo, bool isLat){
 void WatchyGSR::ProcessWeather(){
   String S,T , payload;
   struct tm sunTime;
+  uint16_t wID;
+  uint16_t * wSearch;
   JSONVar root;
   if (UpdateDisp || GSRWiFi.Slow > 0 && !inBrownOut()) return;
 
@@ -4811,32 +4814,36 @@ void WatchyGSR::ProcessWeather(){
         root = JSON.parse(payload);
         S = CleanString(JSON.stringify(root["error"]));
         if (S == "null"){
-            S = CleanString(JSON.stringify(root["current"]["temperature_2m"]));
-            WeatherData.Weather.Temperature.Current = (S.toFloat());
-            S = CleanString(JSON.stringify(root["current"]["apparent_temperature"]));
-            WeatherData.Weather.Temperature.FeelsLike = (S.toFloat());
-            S = CleanString(JSON.stringify(root["current"]["relative_humidity_2m"]));
-            WeatherData.Weather.Humidity = uint8_t(S.toInt());
-            S = CleanString(JSON.stringify(root["current"]["cloud_cover"]));
-            WeatherData.Weather.Clouds = uint8_t(S.toInt());
-            S = CleanString(JSON.stringify(root["current"]["surface_pressure"]));
-            WeatherData.Weather.Pressure = uint16_t(S.toInt());
             S = CleanString(JSON.stringify(root["current"]["weather_code"]));
-            WeatherData.Weather.ID = S.toFloat();
-            S = CleanString(JSON.stringify(root["current"]["wind_speed_10m"]));
-            WeatherData.Weather.WindSpeed = S.toFloat();
-            S = CleanString(JSON.stringify(root["current"]["wind_gusts_10m"]));
-            WeatherData.Weather.WindGust = S.toFloat();
-            S = CleanString(JSON.stringify(root["current"]["wind_direction_10m"]));
-            WeatherData.Weather.WindDirection = S.toInt();
-            S = CleanString(JSON.stringify(root["daily"]["sunrise"]));
-            WeatherData.Weather.SunRise = getISO8601(S);
-            S = CleanString(JSON.stringify(root["daily"]["sunset"]));
-            WeatherData.Weather.SunSet = getISO8601(S);
-            S = CleanString(JSON.stringify(root["hourly"]["visibility"]));
-            WeatherData.Weather.Visibility = uint32_t(S.toInt());
-            WeatherData.goneStale = WatchTime.UTC_RAW + 7200; // 2hr stale time on weather.
-            WeatherData.Ready = true;
+            wID = S.toInt();
+            wSearch = std::find(std::begin(wIDs), std::end(wIDs), wID);
+            if (wSearch != std::end(wIDs)) {
+                WeatherData.Weather.ID = wID;
+                S = CleanString(JSON.stringify(root["current"]["temperature_2m"]));
+                WeatherData.Weather.Temperature.Current = (S.toFloat());
+                S = CleanString(JSON.stringify(root["current"]["apparent_temperature"]));
+                WeatherData.Weather.Temperature.FeelsLike = (S.toFloat());
+                S = CleanString(JSON.stringify(root["current"]["relative_humidity_2m"]));
+                WeatherData.Weather.Humidity = uint8_t(S.toInt());
+                S = CleanString(JSON.stringify(root["current"]["cloud_cover"]));
+                WeatherData.Weather.Clouds = uint8_t(S.toInt());
+                S = CleanString(JSON.stringify(root["current"]["surface_pressure"]));
+                WeatherData.Weather.Pressure = uint16_t(S.toInt());
+                S = CleanString(JSON.stringify(root["current"]["wind_speed_10m"]));
+                WeatherData.Weather.WindSpeed = S.toFloat();
+                S = CleanString(JSON.stringify(root["current"]["wind_gusts_10m"]));
+                WeatherData.Weather.WindGust = S.toFloat();
+                S = CleanString(JSON.stringify(root["current"]["wind_direction_10m"]));
+                WeatherData.Weather.WindDirection = S.toInt();
+                S = CleanString(JSON.stringify(root["daily"]["sunrise"]));
+                WeatherData.Weather.SunRise = getISO8601(S);
+                S = CleanString(JSON.stringify(root["daily"]["sunset"]));
+                WeatherData.Weather.SunSet = getISO8601(S);
+                S = CleanString(JSON.stringify(root["hourly"]["visibility"]));
+                WeatherData.Weather.Visibility = uint32_t(S.toInt());
+                WeatherData.goneStale = WatchTime.UTC_RAW + 7200; // 2hr stale time on weather.
+                WeatherData.Ready = true;
+            }
         }
         WeatherData.Pause = 0;
         WeatherData.State = 99;
