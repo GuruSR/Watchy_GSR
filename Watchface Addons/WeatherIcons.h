@@ -215,14 +215,14 @@ const unsigned char* getWeatherIcon(uint16_t Condition, bool Small = false);
 const unsigned char* getTemperatureScaleIcon(bool Metric, bool Small = false);
 
 const unsigned char* getWeatherIcon(uint16_t Condition, bool Small){
-if(Condition > 801){ return (Small ? WeatherIcon_Cloudy_Small : WeatherIcon_Cloudy); // Cloudy
-    }else if(Condition == 801){ return (Small ? WeatherIcon_CloudSun_Small : WeatherIcon_CloudSun); // Few Clouds
-    }else if(Condition == 800){ return (Small ? WeatherIcon_Sunny_Small : WeatherIcon_Sunny); // Clear
-    }else if(Condition >=700){ return (Small ? WeatherIcon_Atmosphere_Small : WeatherIcon_Atmosphere); // Atmosphere
-    }else if(Condition >=600){ return (Small ? WeatherIcon_Snow_Small : WeatherIcon_Snow); // Snow
-    }else if(Condition >=500){ return (Small ? WeatherIcon_Rain_Small : WeatherIcon_Rain); // Rain
-    }else if(Condition >=300){ return (Small ? WeatherIcon_Drizzle_Small : WeatherIcon_Drizzle); // Drizzle
-    }else if(Condition >=200){ return (Small ? WeatherIcon_Thunderstorm_Small : WeatherIcon_Thunderstorm); } // Thunderstorm
+if(Condition > 801 || Condition == 3){ return (Small ? WeatherIcon_Cloudy_Small : WeatherIcon_Cloudy); // Cloudy
+    }else if(Condition == 801 || Condition == 1 || Condition == 2){ return (Small ? WeatherIcon_CloudSun_Small : WeatherIcon_CloudSun); // Few Clouds
+    }else if(Condition == 800 || Condition == 0){ return (Small ? WeatherIcon_Sunny_Small : WeatherIcon_Sunny); // Clear
+    }else if(Condition >=700 || Condition == 45 || Condition == 48){ return (Small ? WeatherIcon_Atmosphere_Small : WeatherIcon_Atmosphere); // Atmosphere
+    }else if(Condition >=600 || Condition == 71 || Condition == 73 || Condition == 75 || Condition == 77 || Condition == 85 || Condition == 86 || Condition == 66 || Condition == 67){ return (Small ? WeatherIcon_Snow_Small : WeatherIcon_Snow); // Snow
+    }else if(Condition >=500 || Condition == 61 || Condition == 63 || Condition == 65 || Condition == 80 || Condition == 81 || Condition == 82){ return (Small ? WeatherIcon_Rain_Small : WeatherIcon_Rain); // Rain
+    }else if(Condition >=300 || Condition == 51 || Condition == 53 || Condition == 55 || Condition == 56 || Condition == 57){ return (Small ? WeatherIcon_Drizzle_Small : WeatherIcon_Drizzle); // Drizzle
+    }else if(Condition >=200 || Condition == 95 || Condition == 96 || Condition == 99){ return (Small ? WeatherIcon_Thunderstorm_Small : WeatherIcon_Thunderstorm); } // Thunderstorm
     return nullptr;
 };
 
