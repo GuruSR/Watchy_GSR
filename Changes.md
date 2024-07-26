@@ -265,3 +265,8 @@
 
 **Version 1.4.7K:**
 - **FIX:**  Weather code now only accepts validated weather IDs from Open Meteo.  WeatherIcons will not receive wrong weather IDs.
+
+**Version 1.4.7L:**
+- **FIX:**  Fixed the recognition of the V3 being an ESP32 RTC ONLY (so drift calculation will not be saved in the External RTC's settings).
+- **FIX:**  Properly retrieve the Fast flag on the Internal RTC drift settings.
+- **FIX:**  Fixed the Use ESP32 RTC to show `Locked` on a V3 Watchy.
