@@ -473,6 +473,7 @@ void WatchyGSR::init(String datetime){
             if (OkNVS(GName)) B = NVS.getString(GTZ,S);
             OP.setCurrentPOSIX(S);
             RetrieveSettings();
+            WatchTime.ESPRTC |= (HWVer == 3.0f);
             if (OkNVS(GName)) {
                 S=""; B = NVS.getString(STP,S); if (S.toInt()) Steps.Cached = S.toInt();
                 S=""; B = NVS.getString(YSTP,S); if (S.toInt()) Steps.Yesterday = S.toInt();
@@ -642,27 +643,28 @@ void WatchyGSR::init(String datetime){
                     break;
                   case 2: // Setup Arduino OTA and wait for it to either finish or fail by way of back button held for too long OR 2 minute with no upload.
                     if (Menu.Item == GSR_MENU_OTAU){
-                    ArduinoOTA.setHostname(WiFi_AP_SSID);
-                    ArduinoOTA
-                    .onStart([]() {
-                      String Type;
-                      if (ArduinoOTA.getCommand() == U_FLASH)
-                      Type = "sketch";
-                      else // U_SPIFFS
-                      Type = "filesystem";
-                      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-                    })
-                    .onEnd([]() {
-                      OTAEnd = true;
-                    })
-                    .onProgress([](unsigned int progress, unsigned int total) {
-                      OTATimer=millis();
-                    })
-                    .onError([](ota_error_t error) {
-                      OTAEnd=true;
-                    });
-                    RefreshCPU(GSR_CPUMAX);
-                    ArduinoOTA.begin();
+                      ArduinoOTA.setHostname(WiFi_AP_SSID);
+                      ArduinoOTA
+                      .onStart([]() {
+                        String Type;
+                        if (ArduinoOTA.getCommand() == U_FLASH)
+                        Type = "sketch";
+                        else // U_SPIFFS
+                        Type = "filesystem";
+                        // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+                      })
+                      .onEnd([]() {
+                        OTAEnd = true;
+                      })
+                      .onProgress([](unsigned int progress, unsigned int total) {
+                        OTATimer=millis();
+                      })
+                      .onError([](ota_error_t error) {
+                        OTAEnd=true;
+                      });
+                      RefreshCPU(GSR_CPUMAX);
+                      ArduinoOTA.begin();
+                      ArduinoOTA.setPassword("watchy");
                     }else if (Menu.Item == GSR_MENU_OTAM) WatchyGSR::StartWeb();
                     Menu.SubItem++;
                     //showWatchFace();
@@ -1406,8 +1408,8 @@ void WatchyGSR::drawMenu(){
             O = LGSR.GetID(Options.LanguageID,120);
         }else if (Menu.SubItem == 8){ // Drift Current
             O = String(SRTC.getDrift(WatchTime.ESPRTC)) + "/" + (SRTC.isFastDrift(WatchTime.ESPRTC) ? "-1" : "1");
-        }else if (Menu.SubItem == 9 && HWVer != 3.0f){ // Toggle ESP32 RTC
-            O = LGSR.GetID(Options.LanguageID,(WatchTime.ESPRTC ? 81 : 83));  /* WatchTime.ESPRTC, really says use the ESP32 */
+        }else if (Menu.SubItem == 9){ // Toggle ESP32 RTC
+            O = LGSR.GetID(Options.LanguageID,(HWVer == 3.0 ? 82 : (WatchTime.ESPRTC ? 81 : 83)));  /* WatchTime.ESPRTC, really says use the ESP32 */
         }else if (Menu.SubItem == 11){ // Drift Current
             S = String(SRTC.getDrift(WatchTime.ESPRTC));
             Menu.SubSubItem = (Menu.SubSubItem < S.length() ? Menu.SubSubItem : S.length() - 1);
@@ -3383,8 +3385,8 @@ void WatchyGSR::UpdateUTC(){
 }
 
 void WatchyGSR::UpdateClock(){
-    WatchTime.Local = UTCtoLocal(WatchTime.UTC_RAW);
     bool B = WatchTime.BedTime;
+    WatchTime.Local = UTCtoLocal(WatchTime.UTC_RAW);
     if (Options.SleepEnd > Options.SleepStart) WatchTime.BedTime = (WatchTime.Local.Hour >= Options.SleepStart && WatchTime.Local.Hour < Options.SleepEnd);
     else WatchTime.BedTime = (WatchTime.Local.Hour >= Options.SleepStart || WatchTime.Local.Hour < Options.SleepEnd);
 /* SORT OUT THE NIGHTTIME Wallpaper Change */
@@ -4400,9 +4402,10 @@ void WatchyGSR::StoreSettings(String FromUser){
 
     if (NewV > 133){
         J++; if (L > J) {
-            if ((O[J] & 1) == 1) DX = 0 - DX;
-            J++; if (NewV > 136) if ((O[J] & 8) == 8) DI = 0 - DI;
-            NTPData.AutoSync = ((O[J] & 2) == 2); (FX = (O[J] & 1) == 1); (FI = (O[J] & 8) == 8); WatchTime.ESPRTC = ((O[J] & 4) == 4); SRTC.useESP32(WatchTime.ESPRTC);
+            FX = ((O[J] & 1) == 1); J++;
+            if (NewV > 136) FI = ((O[J] & 8) == 8);
+            NTPData.AutoSync = ((O[J] & 2) == 2);
+            WatchTime.ESPRTC = ((O[J] & 4) == 4); SRTC.useESP32(WatchTime.ESPRTC);
         }
         J++; if (L > J) { NTPData.SyncHour = O[J]; J++; } // Test
         if (L > J) { NTPData.SyncMins = O[J]; J++; } // Test
@@ -4449,8 +4452,8 @@ void WatchyGSR::StoreSettings(String FromUser){
         if (Ok) A++;
     }
 
-if (DX < 0) DX = 0 - DX;
-if (DI < 0) DI = 0 - DI;
+    if (DX < 0) DX = 0 - DX;
+    if (DI < 0) DI = 0 - DI;
     SRTC.setDrift(DI,FI,true);
     SRTC.setDrift(DX,FX,false);
 }
