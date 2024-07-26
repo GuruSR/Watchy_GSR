@@ -44,6 +44,7 @@ This Watchy "face" contains the following heiarchy of options and settings:
 | Menu              | Sub-Menu Item             | Function Description |
 |-----------------: | ------------------------- | -------------------- |
 | **Edit RTC**      | **Edit RTC**              | Edit the time to be current (if you plan to start/end a Drift Calculation) or pass by using MENU. |
+|                   | **Use ESP32 RTC           | Toggle to use the internal ESP32(S3) RTC instead of an External.  For the V3 Watchy, this will show `Locked`. |
 |   (Conditional)   | **Drift Management**      | Once Drift Calculation has completed, this will list the Drift Value.  Pressing MENU will let you edit the Drift Value. |
 |                   | **Drift Management**      | Will list Drift Begin or Drift Calculate, MENU to proceed on whichever option is present only after correctly changing the time using Edit RTC. [^1] |
 
