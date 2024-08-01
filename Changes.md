@@ -270,3 +270,10 @@
 - **FIX:**  Fixed the recognition of the V3 being an ESP32 RTC ONLY (so drift calculation will not be saved in the External RTC's settings).
 - **FIX:**  Properly retrieve the Fast flag on the Internal RTC drift settings.
 - **FIX:**  Fixed the Use ESP32 RTC to show `Locked` on a V3 Watchy.
+
+**Version 1.4.7M:**
+- **FIX:**  Fixed (hopefully as best as possible) the Battery indicator, some V3's may show a ! battery indicator due to low voltage detecton (that is being investigated).
+- **FIX:**  Using SmallRTC 2.4.3 to hopefully fix the drift calculation oddity with values being returned wrong.
+- **FIX:**  StableBMA 1.6 now properly supports the V3 Watchy and can properly use tilt and double tap.
+- **FIX:**  Moved the user input from button presses out of the initial switch to better remedy the button oddity with V3 Watchys.
+- **FIX:**  Fixed minor issues with the main loop.
