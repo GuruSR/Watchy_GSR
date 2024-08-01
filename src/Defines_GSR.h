@@ -14,6 +14,7 @@
 
 // Battery
 #define GSR_MaxBattery 4.37
+#define GSR_ChargePerMin 1.10
 
 // functions
 #define roller(v,lo,hi) (((v)<(lo))?(hi):((v)>(hi))?(lo):(v))

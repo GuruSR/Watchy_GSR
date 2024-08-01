@@ -41,7 +41,7 @@ class WatchyGSR{
         static SmallNTP SNTP;
         static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
         static SPIClass hspi;
-        static constexpr const char* Build = "1.4.7L";
+        static constexpr const char* Build = "1.4.7M";
         enum DesOps {dSTATIC, dLEFT, dRIGHT, dCENTER};
 
     public:
@@ -57,7 +57,6 @@ class WatchyGSR{
         virtual void handleButtonPress(uint8_t Pressed) final;
         virtual void deepSleep() final;
         static float getBatteryVoltage();
-        static float BatteryRead();
         virtual bool IsDark() final;
         virtual bool IsAM() final;
         virtual bool IsPM() final;
@@ -171,8 +170,9 @@ class WatchyGSR{
         void drawData(String dData, byte Left, byte Bottom, WatchyGSR::DesOps Style, byte Gutter, bool isTime = false, bool PM = false);
         void GoDark(bool DeepSleeping = false);
         void espPinSetup(gpio_num_t pin, bool pullUp = true, bool bOutput = true);
+        void adcPins();
         void ForceInputs();
-        void detectBattery();
+        void detectBattery(bool booting = false);
         static bool inBrownOut();
         static void BrownOutDetect(bool On = false);
         void SetupESPValues();
@@ -193,6 +193,7 @@ class WatchyGSR{
         bool SoundActive();
         void KeysStart();
         void KeysStop();
+        void drawLogOutput();
         static void SoundAlarms(void * parameter);
         static void KeysCheck(void * parameter);
         void ManageTime();
@@ -253,7 +254,8 @@ class WatchyGSR{
         void RefreshCPU(int Value);
         void Reboot();
         bool OTA();
-        float rawBatteryVoltage();
+        static float rawBatteryVoltage(bool useSecond = false);
+        static bool readRawBatteryVoltage(float &rawBattery, bool useSecond = false);
         uint8_t getTXOffset(wifi_power_t Current);
         void DisplayInit(bool ForceDark = false);
         void DisplayWake(bool Tapped = false);
@@ -342,6 +344,7 @@ struct GSRCPUInfo final {
     bool HasBLE;
 };
 
+extern String GSRLogOutput;
 extern Designing Design;
 extern TimeData WatchTime;
 #ifdef STABLEBMA_H_INCLUDED
