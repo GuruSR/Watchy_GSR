@@ -20,7 +20,7 @@ Needed libraries:  Arduino Libraries, ArduinoOTA (included in ESP32 2.0.13), Sma
 
 **WARNING:**
 
-**2024 V3 Watchy Owners**:  This firmware has been tested on your device, it works, there are issues with it (BMA, Charging, Battery Level).  Time will tell if those issues can be resolved.  Please DO see the Compilation Instructions for the specific notice for the V3.
+**2024 V3 Watchy Owners**:  This firmware IS compatible with your device, but there are issues with the Battery Level which are under investigation.  Time will tell if this issue can be resolved.  Please DO see the Compilation Instructions for the specific notice for the V3.
 
 As of Version 1.4.3H, the Compilation Instructions have changed, the GxEPD2 requires a define to be added to the .h file in the Compilation Instructions or the Dark Border will be disabled.
 
