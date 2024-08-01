@@ -1,3 +1,5 @@
+**WANT TO USE THIS FIRMWARE WITHOUT COMPILING?  Visit the Bin folder!**
+
 ***For those with the new 2024 Watchy (V3), please read this TO THE END!***
 
 ![Watchy GSR Face](/Images/Watchy_GSR.gif)
