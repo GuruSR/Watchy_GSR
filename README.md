@@ -6,7 +6,7 @@
 
 This repo's format:
 
-Bin folder contains the current OTA Bin AND Merged Bins for direct upload, that you can use a tool to upload with or an OTA Upgrade capable firmware to install the current OTA Bin (V1 to V2 ONLY) to the Watchy.
+Bin folder contains the current OTA Bin AND Merged Bins for direct upload, that you can use a tool to upload with or an OTA Upgrade capable firmware to install the current OTA Bin to the Watchy.
 
 src folder contains a universal (Arduino & PlatformIO) setup for compilation, instructions on how to get it to compile are in the src folder.
 
