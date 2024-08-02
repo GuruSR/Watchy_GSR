@@ -277,3 +277,4 @@
 - **FIX:**  StableBMA 1.6 now properly supports the V3 Watchy and can properly use tilt and double tap.
 - **FIX:**  Moved the user input from button presses out of the initial switch to better remedy the button oddity with V3 Watchys.
 - **FIX:**  Fixed minor issues with the main loop.
+- **FIX:**  Added more battery reads to keep the V3 from showing discharged indicator.
