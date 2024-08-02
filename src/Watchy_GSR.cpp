@@ -402,6 +402,7 @@ void WatchyGSR::init(String datetime){
             if (WatchTime.Local.Second == 0) WatchTime.NewMinute = true;
             else WfNM = (WatchTime.Local.Second > 58);
             adcPins();
+            Battery.Read = (rawBatteryVoltage() + 100) / 100;
             detectBattery();
             CalculateTones();
             AlarmsOn = Alarming;
@@ -429,6 +430,7 @@ void WatchyGSR::init(String datetime){
             Rebooted=true;
             UpdateUTC();
             Battery.ADCPin = SRTC.getADCPin();
+            Battery.Read = (rawBatteryVoltage() + 100) / 100;
             Battery.LastState = 0;
             Battery.FloatBottom = 0;
             Battery.FloatTop = 4;
@@ -1302,7 +1304,8 @@ void WatchyGSR::drawMenu(){
                 O = LGSR.GetID(Options.LanguageID,89) + ": " + String(Build);
                 break;
             case 1:
-                O = LGSR.GetID(Options.LanguageID,90) + ": " + String(Battery.Read - (Battery.Read > GSR_MaxBattery ? 1.00 : 0.00)) + "V";
+                Battery.Read = (rawBatteryVoltage()) / 100;
+                O = LGSR.GetID(Options.LanguageID,90) + ": " + String(Battery.Read,2) + "V";
                 break;
             case 2:
                 if (HWVer > 1.0f) { if (HWVer == 3.0f) O = "V3 ESP32S3"; else O = (HWVer == 2.0f) ? "V2.0 PCF8563" : "V1.5 PCF8563"; } else O = "V1 DS3231M";
@@ -1780,9 +1783,9 @@ float f;
 
 void WatchyGSR::adcPins() {
     if (GSR_PIN_USB_DET != 255) {
-        pinMode(GSR_PIN_USB_DET, INPUT_PULLDOWN);
-        pinMode(GSR_PIN_ADC, ANALOG | PULLDOWN);
-        pinMode(GSR_PIN_STAT, ANALOG | PULLDOWN);
+        pinMode(GSR_PIN_USB_DET, INPUT);
+        pinMode(GSR_PIN_ADC, ANALOG);
+        pinMode(GSR_PIN_STAT, ANALOG);
     }
 }
 
@@ -2026,10 +2029,11 @@ void WatchyGSR::drawChargeMe(bool Dark){
   // Shows Battery Direction indicators.
   bool B = Dark;
   uint16_t C = (Dark ? GxEPD_WHITE : ForeColor());
+  Battery.Read = (rawBatteryVoltage()) / 100;
   if (Design.Status.BatteryInverted && !B) C = BackColor();
   if (Battery.Direction == 1){
       display.drawBitmap(Design.Status.BATTx, Design.Status.BATTy, Charging, 40, 17, C);   // Show Battery charging bitmap.
-  }else if (Battery.Read < Battery.MinLevel){
+  }else if (Battery.Read < Battery.MinLevel && Battery.Read > 3.2999f){ // At <3.3v, the display won't work (V3 workaround).
       display.drawBitmap(Design.Status.BATTx, Design.Status.BATTy, (Battery.Read < Battery.LowLevel ? ChargeMeBad : ChargeMe), 40, 17, C);   // Show Battery needs charging bitmap.
   }
 }
@@ -4163,7 +4167,6 @@ void WatchyGSR::initZeros(){
     Menu.SubSubItem = 0;
     NTPData.Pause = 0;
     NTPData.Wait = 0;
-    Battery.Read = (rawBatteryVoltage() + 100) / 100;
     Battery.Level = -2;
     ActiveMode = false;
     OTATry = 0;
