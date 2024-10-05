@@ -227,22 +227,22 @@ RTC_DATA_ATTR struct WeatherGSR final {
    uint8_t Pause;          /* How many 50ms to pause for. */
    time_t goneStale;       /* If time goes past this, the weather data is STALE */
    struct Weatherinfo {
-     uint16_t ID;          /* ID from open-medeo.com */
+     uint16_t ID;          /* ID from open-meteo.com */
      struct TempsGSR {
        float FeelsLike;    /* These are set to the Kelvin, when the function call (SetWeatherScale(Metric is true/Imperial is false)) */
        float Current;      /* is done, the functions for these will return the proper values based on the selected scale. */
      } Temperature;
-     uint8_t Humidity;     /* "humidity" from open-medeo.com */
-     uint8_t Clouds;       /* "clouds" from open-medeo.com */
-     uint16_t Pressure;    /* "pressure" from open-medeo.com */
-     time_t SunRise;       /* "sunrise" from open-medeo.com */
-     time_t SunSet;        /* "sunset" from open-medeo.com */
-     uint32_t Visibility;  /* "visibility" from open-medeo.com */
-     float WindSpeed;      /* "wind" "speed" from open-medeo.com */
-     int WindDirection;    /* "wind" "deg" from open-medeo.com */
-     float WindGust;       /* "wind" "gust" from open-medeo.com */
+     uint8_t Humidity;     /* "humidity" from open-meteo.com */
+     uint8_t Clouds;       /* "clouds" from open-meteo.com */
+     uint16_t Pressure;    /* "pressure" from open-meteo.com */
+     time_t SunRise;       /* "sunrise" from open-meteo.com */
+     time_t SunSet;        /* "sunset" from open-meteo.com */
+     uint32_t Visibility;  /* "visibility" from open-meteo.com */
+     float WindSpeed;      /* "wind" "speed" from open-meteo.com */
+     int WindDirection;    /* "wind" "deg" from open-meteo.com */
+     float WindGust;       /* "wind" "gust" from open-meteo.com */
    } Weather;
-   time_t LastCall;        /* Last call to open-medeo.com + Honor ## minute delay */
+   time_t LastCall;        /* Last call to open-meteo.com + Honor ## minute delay */
    double LastLat;         /* Last Latitude  ^^^ */
    double LastLon;         /* Last Longitude ^^^ */
    double StaticLat;       /* Static Latitude  from OTA Website */
