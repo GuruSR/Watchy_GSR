@@ -3995,11 +3995,7 @@ void WatchyGSR::processWiFiRequest(){
             RefreshCPU(GSR_CPUMAX);
             ResetOTA();
             GSRWiFi.Powered = true;
-#ifdef ARDUINO_ESP32_RELEASE_1_0_6
-            if (GSRWiFi.WiFiEventID == 0) GSRWiFi.WiFiEventID = WiFi.onEvent(WatchyGSR::WiFiStationDisconnected, SYSTEM_EVENT_STA_DISCONNECTED);  // ARDUINO_EVENT_WIFI_STA_DISCONNECTED
-#else
             if (GSRWiFi.WiFiEventID == 0) GSRWiFi.WiFiEventID = WiFi.onEvent(WatchyGSR::WiFiStationDisconnected, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);  // SYSTEM_EVENT_STA_DISCONNECTED
-#endif
             GSRWiFi.Index = 0;
             GSRWiFi.Tried = false;
             GSRWiFi.Last = 0;
