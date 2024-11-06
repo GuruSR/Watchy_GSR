@@ -3951,8 +3951,8 @@ uint8_t WatchyGSR::getSWValue(bool SW1, bool SW2, bool SW3, bool SW4){
         if (SW2) return 2;
         if (SW3) return 3;
         if (SW4) return 4;
-        return 0;
     }
+    return 0;
 }
 
 void WatchyGSR::AskForWiFi(){ if (Battery.Read > Battery.RadioLevel) { SetAskWiFi(Watchy_Chip_Info.HasWiFi); GSRWiFi.Requests++; } }
