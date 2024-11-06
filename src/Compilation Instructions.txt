@@ -12,7 +12,7 @@ Watchy GSR offers OTA, in order for that to work, your compile setup should have
 
 **VERSION 1.4.7F CHANGES**
 
-V3:  There is a new version V3, which as of writing, I do not have, but I have partial information and have made hopefully the necessary changes to get this to compile for it.  Double check the Compile Settings if using Arduino, a platformioV3.ini has to be renamed to platformio.ini before you compile, sadly, there isn't any easy way to do this with that software.
+V3:  There is a new version 3, which as of writing, this should compile and upload fine to a V3.  The latest ESP32 might prove too frustrating.
 
 **VERSION 1.4.3+ CHANGES**
 
