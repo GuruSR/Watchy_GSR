@@ -6,7 +6,6 @@
   #define SMALL_RTC_NO_DS3232
   #define SMALL_RTC_NO_PCF8563
 #endif
-#include <core_version.h>
 #include <string>
 #include "Defines_GSR.h"
 #include "Web-HTML.h"
