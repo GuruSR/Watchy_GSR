@@ -9,18 +9,16 @@
 #include <string>
 #include "Defines_GSR.h"
 #include "Web-HTML.h"
-#include <Arduino_JSON.h>
+#include <ArduinoJson.h>
 #include <esp_partition.h>
 #include <ESPmDNS.h>
 #include <mbedtls/base64.h>
 #include "esp_chip_info.h"
-#include <driver/periph_ctrl.h>
 #include <driver/rtc_io.h>
 #include <Wire.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <ArduinoOTA.h>
-#include <Update.h>
 #include <WebServer.h>
 #include <esp_wifi.h>
 #include <HTTPClient.h>
@@ -40,7 +38,7 @@ class WatchyGSR{
         static SmallNTP SNTP;
         static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
         static SPIClass hspi;
-        static constexpr const char* Build = "1.4.7M";
+        static constexpr const char* Build = "1.4.7N";
         enum DesOps {dSTATIC, dLEFT, dRIGHT, dCENTER};
 
     public:
@@ -59,6 +57,8 @@ class WatchyGSR{
         virtual bool IsDark() final;
         virtual bool IsAM() final;
         virtual bool IsPM() final;
+        virtual bool Is24HourMode() final;
+        virtual bool IsLightMode() final;
         virtual String GetLangWebID() final;
         virtual void CheckButtons() final;
         static uint8_t getButtonPins();
@@ -153,6 +153,12 @@ class WatchyGSR{
         virtual int GetWebResponse() final;
         virtual String GetWebData() final;
         virtual bool AskForWeb(String URL, uint8_t Timeout = 5) final;
+        virtual bool filterGeo(double geoValue, bool isLatitude = false) final;
+        virtual double getWeatherLatitude(bool useStatic = false) final;
+        virtual double getWeatherLongitude(bool useStatic = false) final;
+        virtual float getLowBattery(bool useCritical = false) final;
+        virtual float getLowBatteryRadio() final;
+        virtual String getCurrentNTPServer() final;
         virtual String CleanString(String Clean) final;
         virtual void initWatchFaceStyle() final;
         virtual bool ChangeWatchFace(bool Up = true) final;
@@ -195,12 +201,14 @@ class WatchyGSR{
         void drawLogOutput();
         static void SoundAlarms(void * parameter);
         static void KeysCheck(void * parameter);
+        time_t tmTOtime_t(tm intm, bool flatten = true);
         void ManageTime();
         void _rtcConfig();
         void _bmaConfig();
         void UpdateBMA();
         static uint16_t _readRegister(uint8_t address, uint8_t reg, uint8_t *data, uint16_t len);
         static uint16_t _writeRegister(uint8_t address, uint8_t reg, uint8_t *data, uint16_t len);
+        bool syncToday();
         String MakeTOD(uint8_t Hour, bool AddZeros);
         String MakeSeconds(uint8_t Seconds);
         String MakeSteps(uint32_t uSteps);
@@ -227,6 +235,9 @@ class WatchyGSR{
         void setupDefaults();
         String APIDtoString(uint8_t Index);
         String PASStoString(uint8_t Index);
+        String getNTPfromWeb();
+        void setNTPfromWeb(String newNTP);
+        String overrideNTPfromWeb(String currentNTP);
         void initZeros();
         String GetSettings();
         void StoreSettings(String FromUser);

@@ -321,6 +321,10 @@ class LocaleGSR {
                       return "Adjust Drift";
                    case 130:
                       return "Please Wait";
+                   case 131:
+                      return "Battery Error";
+                   case 132:
+                      return "No Error";
                 }
             }
         }
@@ -379,6 +383,12 @@ class LocaleGSR {
                       return "Static Longitude";
                    case 23:
                       return "Static Latitude";
+                   case 24:
+                      return "Preferred NTP Server";
+                   case 25:
+                      return "NTP";
+                   case 26:
+                      return "Preferred NTP Server stored";
                 }
             }
         }

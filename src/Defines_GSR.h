@@ -40,11 +40,13 @@
 #define GSR_AutoFore 0xC0C0
 
 // Menu offsets so I don't have to statically enter them everywhere.
+// Root Menu
 #define GSR_MENU_STEPS 0
 #define GSR_MENU_ALARMS 1
 #define GSR_MENU_TIMERS 2
 #define GSR_MENU_GAME 3
 #define GSR_MENU_OPTIONS 4
+// Alarms Menu
 #define GSR_MENU_ALARM1 5
 #define GSR_MENU_ALARM2 6
 #define GSR_MENU_ALARM3 7
@@ -53,6 +55,7 @@
 #define GSR_MENU_TIMEDN 10
 #define GSR_MENU_TMEDCF 11
 #define GSR_MENU_TIMEUP 12
+// Options Menu
 #define GSR_MENU_STYL 13
 #define GSR_MENU_LANG 14
 #define GSR_MENU_DISP 15
@@ -73,10 +76,12 @@
 #define GSR_MENU_WIFI 30
 #define GSR_MENU_OTAU 31
 #define GSR_MENU_OTAM 32
+// Troubleshooting Menu
 #define GSR_MENU_SCRN 33
 #define GSR_MENU_RSET 34
 #define GSR_MENU_TOFF 35  // Time Diff offset.
-#define GSR_MENU_UNVS 36
+#define GSR_MENU_BERR 36
+#define GSR_MENU_UNVS 37
 
 // Menu segments.
 #define GSR_MENU_INNORMAL 0
@@ -102,6 +107,10 @@
 #define GSR_NOS 4     // Used to stop the default status symbols from being printed (WiFi -> Alarms & Battery Charge).
 #define GSR_MOV 8     // True if override, but can be disabled *IF* held down for 10 seconds, it would not open the menu.
 #define GSR_GAM 16    // Set at startup for telling Watchy GSR that the AddOn is a game and not a watch face.
+//#define GSR_APP 32    // AddOn as an App will offer menu insert.
+
+// Weather Defines.
+#define NOLOC 255     // Means no Geo Location found (255 is out of the range for Long/Lat values).
 
 //SetCPU defines.
 #define GSR_CPUMAX 65280
