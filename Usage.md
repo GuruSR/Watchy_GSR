@@ -39,6 +39,7 @@ This Watchy "face" contains the following heiarchy of options and settings:
 | **Troubleshoot**  | **Reset Screen**          | Reset screen if artifacting or ghosting is happening. |
 |                   | **Watchy Reboot**         | Reboot the Watchy in the event something stops working. |
 |                   | **Edit RTC**              | Allows you to edit and change the Drift Value on either internal or external RTC.  See Menu below for more information. |
+|                   | **Battery Error**         | Lets you set a 0.01 to 0.1+ on the Low Battery levels to ensure the indicators show up on your specific battery. |
 |                   | **Storage Settings**      | Allows you to disable Non-Volatile Storage of settings for this Watchy face (or re-enable them). [^3] |
   
 | Menu              | Sub-Menu Item             | Function Description |
