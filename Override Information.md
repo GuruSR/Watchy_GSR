@@ -105,6 +105,8 @@ Functions available for communication:
 | float getBatteryVoltage() | Returns a cleaned battery voltage. |
 | IsDark() | Is the screen currently black (Screen Off has triggered from settings). |
 | IsBatteryHidden() | Returns **true** if the battery indicator isn't visible. |
+| Is24HourMode() | Returns **true** if the Watchy's configuration is set to 24 hour mode. |
+| IsLightMode() | Returns **true** if the Watchy's configuration is set to use Light mode. |
 | IsMetric() | Returns **true** if the current weather scale is Metric. |
 | VibeTo(bool Mode) | Set VibeTo to `true` to enable vibration motor, `false` to stop it. |
 | MakeTime(int Hour, int Minutes, bool &**Alarm**) | Use a variable in **Alarm** parameter always.  When **Alarm** is set to `false` you'll get normal Hour & Minutes format based on Options, **Alarm** will be `true` for PM.  Setting **Alarm** to `true` for Alarm format.  Returns a String. |
@@ -118,7 +120,7 @@ Functions available for communication:
 | currentWiFi() | Returns `WL_CONNECTED` when connected or `WL_CONNECT_FAILED` when not, InsertWiFi() is only called when `WL_CONNECTED` happens and no other process is using it. |
 | endWiFi() | Tell Watchy_GSR that you're finished with the WiFi, only do this *IF* you asked for it. |
 | AllowDefaultWatchStyles(bool Allow) | Will state if you want (**{true}**/false) the original Watch Styles (Index 0 (Classic GSR) to be used first). |
-| AddWatchStyle(String StyleName **\[, CLASS OBJECT\]**, bool IsGame == false) | Will return the Index of the added Watch Style (255 = error), 30 character max limit on Watch Style name.  **CLASS OBJECT:** This is [REQUIRED] inside RegisterWatchFaces() within an AddOn. Simply pass `this` as a **CLASS OBJECT**.  Do **NOT** include a CLASS OBJECT when calling from GSR.ino.  **OPTIONAL:** Now offers saying **true** to "IsGame" to register the Addon as a game. |
+| AddWatchStyle(String StyleName \[, CLASS OBJECT\]\[, bool IsGame = **{false}\]**) | Will return the Index of the added Watch Style (255 = error), 30 character max limit on Watch Style name.  **CLASS OBJECT:** This is [REQUIRED] inside RegisterWatchFaces() within an AddOn. Simply pass `this` as a **CLASS OBJECT**.  Do **NOT** include a CLASS OBJECT when calling from GSR.ino.  **OPTIONAL:** Now offers saying **true** to "IsGame" to register the Addon as a game. |
 | NoMenu() | This returns `true` if the Menu **isn't** open. |
 | getAngle(uint16_t Angle, uint8_t Width, uint8_t Height, uint8_t &X, uint8_t &Y) | Give it an Angle, Width and Height, X and Y will have those values, useful for Analog displays |
 | CurrentSteps(bool Yesterday = **{false}**) | Will return a string formatted with today's steps and optionally (yesterday's).
@@ -143,6 +145,11 @@ Functions available for communication:
 | float GetWeatherWindSpeed() | Gets the current Wind Speed in the requested Scale. |
 | float GetWeatherWindDirection() | Gets the current Wind Gust direction (see OpenWeatherMap information for how to use this value). |
 | float GetWeatherWindGust() | Gets the current Wind Gust speed in the requested Scale. |
+| double getWeatherLatitude(bool&nbsp;useStatic&nbsp;=&nbsp;**{false}**) | Returns the specific Latitude or **NOLOC** for no location. |
+| double getWeatherLongitude(bool&nbsp;useStatic&nbsp;=&nbsp;**{false}**) | Returns the specfic Longitude or **NOLOC** for no location. |
+| float getLowBattery(bool useCritical = **{false}**) | Returns the specific Low Battery value. |
+| float getLowBatteryRadio() | Returns the Lowest Battery value that WiFi & BT can be used safely at. |
+| String getCurrentNTPServer() | Returns the current NTP Server, either Requested or coded default. |
 | bool GetWebAvailable() | Returns **true** if the AskForWeb function is available for use. |
 | bool GetWebReady() | Returns **true** if data has come back. |
 | int GetWebResponse() | Returns the HTTP response code from the last AskForWeb response. |
