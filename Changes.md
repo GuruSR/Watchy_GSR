@@ -278,3 +278,15 @@
 - **FIX:**  Moved the user input from button presses out of the initial switch to better remedy the button oddity with V3 Watchys.
 - **FIX:**  Fixed minor issues with the main loop.
 - **FIX:**  Added more battery reads to keep the V3 from showing discharged indicator.
+
+**Version 1.4.7N:**
+- **FIX:**  Fix NTP Auto Sync: Settings being mangled and not Syncing.
+- **FIX:**  The Drift Compensation was limited to the wrong upper level and wouldn't go past 1000 on the lowest, now goes down to 1 second, crazy number, but it does allow it.
+- **ADD:**  Add an NTP server by choice to OTA Website to avoid having to compile.
+- **FIX:**  Convert to ArduinoJson from Arduino_JSON.
+- **ADD:**  Include Battery Error to allow for varied batteries dying at different rates, so the bottom levels can be adjusted to show indicators.
+- **ADD:**  Include new API functions for getting Longitude and Latitude from static or current values, also 24 hour mode and light mode return functions.
+- **FIX:**  Bed Time Screen Blanking will now update clock display if menu is open.
+- **FIX:**  Fix weather stale code to abide by current weather cycle duration.
+- **FIX:**  Clean up alarm task for better cancellation of alarm by editing it while it is active.
+- **FIX:**  Fix thread levels to just above idle for much better user experience.
