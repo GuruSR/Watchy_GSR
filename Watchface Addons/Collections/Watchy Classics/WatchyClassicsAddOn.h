@@ -7835,7 +7835,12 @@ class WatchyClassicsAddOnClass : public WatchyGSR {
                 display.setFont(&DSEG7_Classic_Regular_39);
                 display.getTextBounds(T, 0, 0, &x1, &y1, &w, &h);
                 if(159 - w - x1 > 87) display.setCursor(159 - w - x1, 150);
-                else { display.setFont(&DSEG7_Classic_Bold_25); display.setCursor(159 - w - x1, 136); }
+                else {
+                    display.setFont(&DSEG7_Classic_Bold_25);
+                    x1 = 0; y1 = 0;
+                    display.getTextBounds(T, 0, 0, &x1, &y1, &w, &h);
+                    display.setCursor(159 - w - x1, 136);
+                }
                 display.print(T);
                 display.drawBitmap(165, 110, getTemperatureScaleIcon(IsMetric()), 26, 20, ForeColor(), BackColor());
                 if (weatherIcon != nullptr){
