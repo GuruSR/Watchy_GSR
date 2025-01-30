@@ -45,6 +45,15 @@ class LocaleGSR {
                       return "{M} {D}";  // Month & Date
                 }
             }
+            break;
+            case 1:{
+                switch(ID){
+                   case 0:
+                      return "{W}"; // Weekday.
+                   case 1:
+                      return "{D} {M}";  // Month & Date
+                }
+            }
         }
         return "None";
     };
@@ -326,6 +335,250 @@ class LocaleGSR {
                    case 132:
                       return "No Error";
                 }
+                break;
+                case 1:{
+                switch(ID){
+                   case 0:
+                      return "GSR Classique"; // Watchface 0.
+                   case 1:
+                      return "--";          // Placeholder
+                   case 2:
+                      return "Demain";
+                   case 3:
+                      return "Reset Demain";
+                   case 4:
+                      return "Pas";
+                   case 5:
+                      return "Alarmes";
+                   case 6:
+                      return "Minuteries";
+                   case 7:
+                      return "Options";
+                   case 8:
+                      return "Heure de l'alarme 1";
+                   case 9:
+                      return "A1 repet. bip";
+                   case 10:
+                      return "Options de l'Alarme 1";
+                   case 11:
+                      return "Alarme 1";
+                   case 12:
+                      return "Heure de l'alarme 2";
+                   case 13:
+                      return "A2 repet. bip";
+                   case 14:
+                      return "Options de l'alarme 2";
+                   case 15:
+                      return "Alarme 2";
+                   case 16:
+                      return "Heure de l'alarme 3";
+                   case 17:
+                      return "A3 repet. bip";
+                   case 18:
+                      return "Options de l'alarme 3";
+                   case 19:
+                      return "Alarme 3";
+                   case 20:
+                      return "Heure de l'alarme 4";
+                   case 21:
+                      return "A4 repet. bip";
+                   case 22:
+                      return "Options de l'alarme 4";
+                   case 23:
+                      return "Alarme 4";
+                   case 24:
+                      return "Nb. Bip";
+                   case 25:
+                      return "Décompte";
+                   case 26:
+                      return "Chrono";
+                   case 27:
+                      return "Style de montre";
+                   case 28:
+                      return "Couleur";
+                   case 29:
+                      return "Langue";
+                   case 30:
+                      return "Bordure";
+                   case 31:
+                      return "Main dominante";
+                   case 32:
+                      return "Menu & retour";
+                   case 33:
+                      return "Orientation";
+                   case 34:
+                      return "Mode holorge";
+                   case 35:
+                      return "Vibration";
+                   case 36:
+                      return "Temps turbo";
+                   case 37:
+                      return "Écran éteint";
+                   case 38:
+                      return "Effacement de l'écran";
+                   case 39:
+                      return "Écran s'éteint";
+                   case 40:
+                      return "Heure du coucher";
+                   case 41:
+                      return "Heure du lever";
+                   case 42:
+                      return "Orientation";
+                   case 43:
+                      return "Performance";
+                   case 44:
+                      return "Puissance Tx Wifi";
+                   case 45:
+                      return "Information";
+                   case 46:
+                      return "Dépannage";
+                   case 47:
+                      return "Synchro Watchy";
+                   case 48:
+                      return "Connecter à Watchy";
+                   case 49:
+                      return "Téléverser Firmware";
+                   case 50:
+                      return "Mise à jour OTA";
+                   case 51:
+                      return "Visiter le site web";
+                   case 52:
+                      return "Site web OTA";
+                   case 53:
+                      return "Remise à zéro écran";
+                   case 54:
+                      return "Redémarrer Watchy";
+                   case 55:
+                      return "Retourner à RTC";
+                   case 56:
+                      return "Detecter déviations RTC";
+                   case 57:
+                      return "Paramètres de stockage";
+                   case 58:
+                      return "Changer le stockage";
+                   case 59:
+                      return "Effacer et redémarrer";
+                   case 60:
+                      return "MENU pour reset";
+                   case 61:
+                      return "MENU pour choisir";
+                   case 62:
+                      return "MENU to changer";
+                   case 63:
+                      return "Répéter";
+                   case 64:
+                      return "Actif";
+                   case 65:
+                      return "se répète";
+                   case 66:
+                      return "MENU pour choisir";
+                   case 67:
+                      return "MENU pour changer";
+                   case 68:
+                      return "éteint";
+                   case 69:
+                      return "allumé";
+                   case 70:
+                      return "MENU pour confirmer";
+                   case 71:
+                      return "Clair";
+                   case 72:
+                      return "Foncé";
+                   case 73:
+                      return "Gaucher";
+                   case 74:
+                      return "Droitier";
+                   case 75:
+                      return "Inverse";
+                   case 76:
+                      return "Normal";
+                   case 77:
+                      return "Watchy à l'endroit";
+                   case 78:
+                      return "Ignorer";
+                   case 79:
+                      return "24 Heures";
+                   case 80:
+                      return "AM/PM";
+                   case 81:
+                      return "Actif";
+                   case 82:
+                      return "Verrouillé";
+                   case 83:
+                      return "Inactif";
+                   case 84:
+                      return "Toujours";
+                   case 85:
+                      return "Heure du coucher";
+                   case 86:
+                      return "Double clic On";
+                   case 87:
+                      return "Double clic seul.";
+                   case 88:
+                      return "à";
+                   case 89:
+                      return "Version";
+                   case 90:
+                      return "Batterie";
+                   case 91:
+                      return "Écono Battery";
+                   case 92:
+                      return "Turbo";
+                   case 93:
+                      return "MENU pour débuter";
+                   case 94:
+                      return "Heure";
+                   case 95:
+                      return "Fuseau horaire";
+                   case 96:
+                      return "Fuseau horaire et heure";
+                   case 97:
+                      return "MENU pour commencer";
+                   case 98:
+                      return "Démarrage point accès";
+                   case 99:
+                      return "BACK pour terminer";
+                   case 100:
+                      return "MENU pour connecter";
+                   case 101:
+                      return "Connection...";
+                   case 102:
+                      return "MENU pour accepter";
+                   case 103:
+                      return "MENU pour redémarrer";
+                   case 104:
+                      return "Synchro du temps";
+                   case 105:
+                      return "En Calcul";
+                   case 106:
+                      return "Mauvais RTC";
+                   case 107:
+                      return "Pas de déviation";
+                   case 108:
+                      return "Menu pour inactiver";
+                   case 109:
+                      return "Menu pour activer";
+                   case 110:
+                      return "MENU pour conserver";
+                   case 111:
+                      return "Effacer et redémarrer";
+                   case 112:
+                      return "secondes";
+                   case 113:
+                      return "seconde";
+                   case 114:
+                      return "PM";
+                   case 115:
+                      return "AM";
+                   case 116:
+                      return "Plein";
+                   case 117:
+                      return "Unique";
+                   case 118:
+                      return "Repeater";
+                   case 119:
+                      return "Options de décompte";
+                }
             }
         }
         return "None";
@@ -391,6 +644,45 @@ class LocaleGSR {
                       return "Preferred NTP Server stored";
                 }
             }
+            break;
+            case 1:{
+                switch(ID){
+                   case 0:
+                      return "Watchy Puissance Tx WiFi";  // Why did I do this?
+                   case 1:
+                      return "Watchy Options de connection";  // 1 to 4 Index page
+                   case 2:
+                      return "Enregistrer et restaurer les paramètres";
+                   case 3:
+                      return "Liste des points d'accès WiFi";
+                   case 4:
+                      return "Déployer un nouveau microprogramme";
+                   case 5:
+                      return "Enregistrer et restaurer les paramètres de Watchy";  // 5 to 6 Settings page
+                   case 6:
+                      return "Sauvegarder"; // WiFi D
+                   case 7:
+                      return "Paramètres de Watchy restaurés! Site web OTA Inactivé"; // 5 to 7 for Settings Done
+                   case 8:
+                      return "Watchy téléverser microprogramme"; // 8 to 13 Upgrade
+                   case 9:
+                      return "Téléverser";
+                   case 10:
+                      return "En attente";
+                   case 11:
+                      return "Vous devez sélectionner un micropgrogramme [bin] à téléverser!";
+                   case 12:
+                      return "Progrès";
+                   case 13:
+                      return "Succès";
+                   case 14:
+                      return "Autres points d'accès Wifi Watchy"; // WiFi A
+                   case 15:
+                      return "PASS";  // WiFi C
+                   case 16:
+                      return "Points d'accès mis à jour! Site web OTA Inactif";
+                }
+            }
         }
         return "None";
     };
@@ -404,7 +696,7 @@ class LocaleGSR {
            case 0:
               return "en";
            case 1:
-              return "None";
+              return "fr";
            case 2:
               return "None";
         }
@@ -420,7 +712,7 @@ class LocaleGSR {
            case 0:
               return "English";
            case 1:
-              return "None";
+              return "Français";
            case 2:
               return "None";
         }
@@ -452,6 +744,25 @@ class LocaleGSR {
                       return "Saturday";
                 }
             }
+            break;
+            case 1:{
+                switch(ID){
+                   case 0:
+                      return "Dimanche";
+                   case 1:
+                      return "Lundi";
+                   case 2:
+                      return "Mardi";
+                   case 3:
+                      return "Mercredi";
+                   case 4:
+                      return "Jeudi";
+                   case 5:
+                      return "Vendredi";
+                   case 6:
+                      return "Samedi";
+                }
+            }
         }
         return "None";
     };
@@ -479,6 +790,25 @@ class LocaleGSR {
                       return "Fri";
                    case 6:
                       return "Sat";
+                }
+            }
+            break;
+            case 1:{
+                switch(ID){
+                   case 0:
+                      return "Dim";
+                   case 1:
+                      return "Lun";
+                   case 2:
+                      return "Mar";
+                   case 3:
+                      return "Mer";
+                   case 4:
+                      return "Jeu";
+                   case 5:
+                      return "Ven";
+                   case 6:
+                      return "Sam";
                 }
             }
         }
@@ -520,6 +850,35 @@ class LocaleGSR {
                       return "December";
                 }
             }
+            break;
+            case 1:{
+                switch(ID){
+                   case 0:
+                      return "Janvier";
+                   case 1:
+                      return "Février";
+                   case 2:
+                      return "Mars";
+                   case 3:
+                      return "Avril";
+                   case 4:
+                      return "Mai";
+                   case 5:
+                      return "Juin";
+                   case 6:
+                      return "Juillet";
+                   case 7:
+                      return "Août";
+                   case 8:
+                      return "Septembre";
+                   case 9:
+                      return "Octobre";
+                   case 10:
+                      return "Novembre";
+                   case 11:
+                      return "Décembre";
+                }
+            }
         }
         return "None";
     };
@@ -557,6 +916,35 @@ class LocaleGSR {
                       return "Nov";
                    case 11:
                       return "Dec";
+                }
+            }
+            break;
+            case 0:{
+                switch(ID){
+                   case 0:
+                      return "Jan";
+                   case 1:
+                      return "Fév";
+                   case 2:
+                      return "Mar";
+                   case 3:
+                      return "Avr";
+                   case 4:
+                      return "Mai";
+                   case 5:
+                      return "Jun";
+                   case 6:
+                      return "Jul";
+                   case 7:
+                      return "Août";
+                   case 8:
+                      return "Sep";
+                   case 9:
+                      return "Oct";
+                   case 10:
+                      return "Nov";
+                   case 11:
+                      return "Déc";
                 }
             }
         }
