@@ -57,5 +57,5 @@ To use OTA Bin files above:
 6. Follow the instructions to use the esptool as in the previous above section at #4 to #9.
 7. Instead of the #10 command, use #9 below.  There are 4 files that require the path to be added if you're not at that location.
 8. Change \(path to file\) to the path and include the separator (\\ or \/) after the path for your OS.
-9. esptool\[.py\] --chip esp32\[s3\] --p \(PORT\) --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_size detect --flash_freq 80m 0x1000 \(path to file\)GSR.ino.bootloader.bin 0x8000 \(path to file\)GSR.ino.partitions.bin 0xe000 \(path to file\)boot_app0.bin 0x10000 \(path to file\)GSR.ino.esp32\[s3\].bin
+9. esptool\[.py\] --chip esp32\[s3\] --p \(PORT\) --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_size detect --flash_freq 80m 0x0 \(path to file\)GSR.ino.bootloader.bin 0x8000 \(path to file\)GSR.ino.partitions.bin 0xe000 \(path to file\)boot_app0.bin 0x10000 \(path to file\)GSR.ino.esp32\[s3\].bin
 10. Once it flashes fully, follow #11 above to when it should finish!  Remember, future bin files (OTA) can be uploaded directly to the Watchy via OTA Website.
