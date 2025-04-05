@@ -43,5 +43,6 @@ For those wanting to override the looks of this Watchy face, look at the Overrid
 
 V3:  For those with the 2024 V3 Watchy, see the file in the main folder about it.
 
-To get this setup for compiling, you need to make a folder in your (Arduino) Stream folder or (PlatformIO) project folder, call it GSR, in there, download the "Starting Point.zip" and latest Release (Source Code) .zip from the Release folder above.
-Extract both "Starting Point.zip" and the latest release (Source Code .zip) into the GSR folder, this will ensure all the necessary files are there.  If you plan to download any AddOns, be sure to deposit those files into the same GSR folder.  Follow the instructions for including AddOns in the src folder's Compilation Instructions.
+To get this ready for compiling, you'll need to make a folder in your (Arduino) Stream folder or (PlatformIO) project folder, call it GSR. Download the latest Release Source code (zip) from the Release folder. Extract the contents of the src folder into the GSR folder. You'll also need to add manually several additional libraries from neighbouring repos: StableBMA, SmallNTP and Olson2POSIX. If working with Arduino IDE this can be done via Sketch -> Include Library -> Add .ZIP Library...
+
+If you plan to download any AddOns, be sure to deposit those files into the same GSR folder. Follow the instructions for including AddOns in the src folder's Compilation Instructions.
