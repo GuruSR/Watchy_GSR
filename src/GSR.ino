@@ -1,4 +1,8 @@
 #include "Watchy_GSR.h"
+#include "GSRWatchFaceBallsy.h"
+#include "GSRWatchFaceLCD.h"
+#include "WeatherIcons.h"
+#include "WatchyClassicsAddOn.h"
 
 // Place all of your data and variables here.
 
