@@ -770,7 +770,7 @@ void WatchyGSR::init(String datetime){
 
 void WatchyGSR::StartWeb(){
     /*return index page which is stored in basicIndex */
-    server.on("/", HTTP_GET, [=, this]() {
+    server.on("/", HTTP_GET, [=, &self = *this]() {
       server.sendHeader("Connection", "close");
       String S = basicIndex;
       S.replace("{%^%}",(OTA() ? basicOTA : ""));
@@ -778,26 +778,26 @@ void WatchyGSR::StartWeb(){
       server.send(200, "text/html", S);
       ResetOTA();
     });
-    server.on("/settings", HTTP_GET, [=,this]() {
+    server.on("/settings", HTTP_GET, [=, &self = *this]() {
       String S = LGSR.LangString(settingsIndex,true,Options.LanguageID,5,6);
       S.replace("{??}",GetSettings());
       server.sendHeader("Connection", "close");
       server.send(200, "text/html", S);
       ResetOTA();
     });
-    server.on("/wifi", HTTP_GET, [=, this]() {
+    server.on("/wifi", HTTP_GET, [=, &self = *this]() {
       server.sendHeader("Connection", "close");
       server.send(200, "text/html", buildWiFiAPPage());
       ResetOTA();
     });
-    server.on("/update", HTTP_GET, [=, this]() {
+    server.on("/update", HTTP_GET, [=, &self = *this]() {
       if (OTA()){
         server.sendHeader("Connection", "close");
         server.send(200, "text/html", LGSR.LangString(updateIndex,true,Options.LanguageID,8,13));
         ResetOTA();
       }
     });
-    server.on("/ntp", HTTP_GET, [=, this]() {
+    server.on("/ntp", HTTP_GET, [=, &self = *this]() {
       String S = LGSR.LangString(ntpIndex,true,Options.LanguageID,6,25);
       S.replace("{%1%}",getNTPfromWeb());
       S.replace("{%2%}",getCurrentNTPServer());
@@ -805,7 +805,7 @@ void WatchyGSR::StartWeb(){
       server.send(200, "text/html", S);
       ResetOTA();
     });
-    server.on("/weather", HTTP_GET, [=, this]() {
+    server.on("/weather", HTTP_GET, [=, &self = *this]() {
       String S = LGSR.LangString(weatherIndex,true,Options.LanguageID,6,23);
       String T = (WeatherData.UseStaticPOS && WeatherData.StaticLat != NOLOC ? makeGeo(String(WeatherData.StaticLat,6),true) : "");
       S.replace("{%1%}",T);
@@ -815,7 +815,7 @@ void WatchyGSR::StartWeb(){
       server.send(200, "text/html", S);
       ResetOTA();
     });
-    server.on("/", HTTP_POST, [=, this]() {
+    server.on("/", HTTP_POST, [=, &self = *this]() {
       server.sendHeader("Connection", "close");
       String S = basicIndex;
       S.replace("{%^%}",(OTA() ? basicOTA : ""));
@@ -823,19 +823,19 @@ void WatchyGSR::StartWeb(){
       server.send(200, "text/html", S);
       ResetOTA();
     });
-    server.on("/exit", HTTP_GET, [=, this]() {
+    server.on("/exit", HTTP_GET, [=, &self = *this]() {
       server.sendHeader("Connection", "close");
       server.send(200, "text/html", LGSR.LangString(basicIndexDone,true,Options.LanguageID,1,21));
       if (WatchyAPOn && Menu.Item == GSR_MENU_WIFI) { Menu.SubItem = 5; UpdateDisp |= Showing(); }
       ResetOTA(); EndOTA(3);
     });
-    server.on("/settings", HTTP_POST, [=, this](){
+    server.on("/settings", HTTP_POST, [=, &self = *this](){
         if (server.argName(0) == "settings") { StoreSettings(server.arg(0)); if (Options.WatchFaceStyle > WatchStyles.Count - 1) Options.WatchFaceStyle = 0; Options.NeedsSaving = true ; WatchFaceStart(Options.WatchFaceStyle, true); }
         server.sendHeader("Connection", "close");
         server.send(200, "text/html", LGSR.LangString(settingsDone,true,Options.LanguageID,5,19));
         ResetOTA();
     });
-    server.on("/wifi", HTTP_POST, [=, this](){
+    server.on("/wifi", HTTP_POST, [=, &self = *this](){
         uint8_t I = 0;
         while (I < server.args()){
             parseWiFiPageArg(server.argName(I),server.arg(I)); I++;
@@ -845,14 +845,14 @@ void WatchyGSR::StartWeb(){
         Options.NeedsSaving = true;
         ResetOTA();
     });
-    server.on("/ntp", HTTP_POST, [=, this](){
+    server.on("/ntp", HTTP_POST, [=, &self = *this](){
         String S = ""; if (server.argName(0) == "ntp") S = server.arg(0);
         server.sendHeader("Connection", "close"); ResetOTA();
         Options.NeedsSaving = (S != getNTPfromWeb());
         setNTPfromWeb(S);
         server.send(200, "text/html", LGSR.LangString(ntpDone,true,Options.LanguageID,19,26));
     });
-    server.on("/weather", HTTP_POST, [=, this](){
+    server.on("/weather", HTTP_POST, [=, &self = *this](){
         String S = ""; if (server.argName(0) == "lat") S = makeGeo(server.arg(0),true);
         String T = ""; if (server.argName(1) == "lon") T = makeGeo(server.arg(1),false);
         server.sendHeader("Connection", "close"); ResetOTA();
@@ -870,11 +870,11 @@ void WatchyGSR::StartWeb(){
         Options.NeedsSaving = true;
         server.send(200, "text/html", LGSR.LangString(weatherDone,true,Options.LanguageID,1,21));
     });
-    server.on("/update", HTTP_POST, [=, this](){
+    server.on("/update", HTTP_POST, [=, &self = *this](){
       server.sendHeader("Connection", "close");
       server.send(200, "text/plain", (Update.hasError()) ? "Upload Failed." : "Watchy will reboot!");
       Reboot();
-    }, [=, this]() {
+    }, [=, &self = *this]() {
       HTTPUpload& upload = server.upload();
       if (upload.status == UPLOAD_FILE_START) {
         ResetOTA();
