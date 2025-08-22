@@ -1,4 +1,5 @@
 .pio
+.vscode
 Bin/
 Images/
 Watchface Addons/
