@@ -1,3 +1,4 @@
+#ifndef GSR_PLATFORMIO_LIBRARY
 #include "Watchy_GSR.h"
 #if __has_include("GSRWatchFaceBallsy.h")
 #include "GSRWatchFaceBallsy.h"
@@ -164,3 +165,5 @@ void setup(){
 }
 
 void loop(){}
+
+#endif
