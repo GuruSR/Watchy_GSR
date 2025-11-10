@@ -1,0 +1,19 @@
+{
+  "name": "Watchy_GSR",
+  "version": "1.4.7N",
+  "description": "Alternative Watchy Library",
+  "keywords": ["watchy", "esp32"],
+  "dependencies": {
+    "Olson2POSIX": "https://github.com/GuruSR/Olson2POSIX.git",
+    "SmallNTP": "https://github.com/GuruSR/SmallNTP.git",
+    "SmallRTC": "https://github.com/GuruSR/SmallRTC.git",
+    "StableBMA": "https://github.com/GuruSR/StableBMA.git",
+    "Older_Rtc_Pcf8563": "https://github.com/GuruSR/Older_Rtc_Pcf8563.git#4967023f1eee101cd8759a8414a9c93980bfad51",
+    "GxEPD2": "https://github.com/ZinggJM/GxEPD2.git#master",
+    "DS3232RTC": "https://github.com/JChristensen/DS3232RTC.git#58c5e0240ca6eab910cc2d25ae6a9c5955aa5be2",
+    "Adafruit-GFX-Library": "https://github.com/adafruit/Adafruit-GFX-Library.git",
+    "ArduinoJson": "https://github.com/bblanchon/ArduinoJson.git",
+    "NTPClient": "https://github.com/arduino-libraries/NTPClient.git",
+    "BMA423_Library": "https://github.com/lewisxhe/BMA423_Library.git"
+  }
+}
