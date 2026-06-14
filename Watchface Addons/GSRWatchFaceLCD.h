@@ -2,7 +2,7 @@ RTC_DATA_ATTR int MyGSRLCDFace;  // Watchface ID #.
 // Approx. 3035 bytes
 
 // https://www.1001freefonts.com/transponder.font
-const uint8_t TRAN48pt7bBitmaps[] PROGMEM = {
+const uint8_t TRAN48pt7bBitmaps[] = {
   0x00, 0x0F, 0xFF, 0x83, 0xFF, 0xE0, 0x3F, 0xFF, 0x8F, 0xFF, 0xE0, 0xBF,
   0xFF, 0x0F, 0xFF, 0x93, 0xBF, 0xFC, 0x0F, 0xFE, 0x7F, 0x00, 0x00, 0x00,
   0x01, 0xFE, 0x00, 0x00, 0x00, 0x3B, 0xFC, 0x00, 0x00, 0x00, 0xF7, 0xF8,
@@ -265,7 +265,7 @@ const uint8_t TRAN48pt7bBitmaps[] PROGMEM = {
   0xFF, 0xF4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x46, 0xFF, 0xFF, 0xFF, 0x62 };
 
-const GFXglyph TRAN48pt7bGlyphs[] PROGMEM = {
+const GFXglyph TRAN48pt7bGlyphs[] = {
   {     0,   1,   1,  44,    0,    0 },   // 0x20 ' '
   {     0,   0,   0,   0,    0,    0 },   // 0x21 '!'
   {     0,   0,   0,   0,    0,    0 },   // 0x22 '"'
@@ -294,14 +294,14 @@ const GFXglyph TRAN48pt7bGlyphs[] PROGMEM = {
   {  2779,  39,  67,  44,    0,  -66 },   // 0x39 '9'
   {  3106,   4,  40,   9,    1,  -41 } }; // 0x3A ':'
 
-const GFXfont TRAN48pt7b PROGMEM = {
+const GFXfont TRAN48pt7b = {
   (uint8_t  *)TRAN48pt7bBitmaps,
   (GFXglyph *)TRAN48pt7bGlyphs,
   0x20, 0x3A, 113 };
 
 // Approx. 3322 bytes
 
-const uint8_t TRAN19pt7bBitmaps[] PROGMEM = {
+const uint8_t TRAN19pt7bBitmaps[] = {
   0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x0F, 0xC0, 0xC1, 0xE0, 0xF0, 0x78,
   0x3C, 0x1E, 0x0F, 0x06, 0x03, 0x0C, 0x0C, 0x30, 0x30, 0xC0, 0xC3, 0x03,
   0x0C, 0x0C, 0x30, 0x30, 0xC0, 0xC3, 0x03, 0x0C, 0x0C, 0x30, 0x30, 0xC0,
@@ -617,7 +617,7 @@ const uint8_t TRAN19pt7bBitmaps[] PROGMEM = {
   0x83, 0xC1, 0x83, 0xC1, 0x83, 0xC1, 0x83, 0xC1, 0x83, 0xC1, 0x83, 0xC1,
   0x83, 0xC1, 0x83, 0xC1, 0xFF, 0x00, 0x7C };
 
-const GFXglyph TRAN19pt7bGlyphs[] PROGMEM = {
+const GFXglyph TRAN19pt7bGlyphs[] = {
   {     0,   1,   1,  18,    0,    0 },   // 0x20 ' '
   {     1,   2,  25,   3,    0,  -25 },   // 0x21 '!'
   {     8,   9,   7,  10,    0,  -25 },   // 0x22 '"'
@@ -714,17 +714,17 @@ const GFXglyph TRAN19pt7bGlyphs[] PROGMEM = {
   {  3714,   6,  27,  18,    8,  -26 },   // 0x7D '}'
   {  3735,  16,  14,  18,    1,  -26 } }; // 0x7E '~'
 
-const GFXfont TRAN19pt7b PROGMEM = {
+const GFXfont TRAN19pt7b = {
   (uint8_t  *)TRAN19pt7bBitmaps,
   (GFXglyph *)TRAN19pt7bGlyphs,
   0x20, 0x7E, 45 };
 
 // Approx. 4435 bytes
 
-const uint8_t TRAN6pt7bBitmaps[] PROGMEM = {
+const uint8_t TRAN6pt7bBitmaps[] = {
   0xDC, 0x63, 0xB8, 0xC6, 0x31, 0xCE, 0xFF, 0x18, 0xC6, 0x31 };
 
-const GFXglyph TRAN6pt7bGlyphs[] PROGMEM = {
+const GFXglyph TRAN6pt7bGlyphs[] = {
   {     0,   5,   8,   6,    0,   -7 },   // 0x41 'A'
   {     0,   0,   0,   0,    0,    0 },   // 0x42 'B'
   {     0,   0,   0,   0,    0,    0 },   // 0x43 'C'
@@ -739,12 +739,12 @@ const GFXglyph TRAN6pt7bGlyphs[] PROGMEM = {
   {     0,   0,   0,   0,    0,    0 },   // 0x4C 'L'
   {     5,   5,   8,   6,    0,   -7 } }; // 0x4D 'M'
 
-const GFXfont TRAN6pt7b PROGMEM = {
+const GFXfont TRAN6pt7b = {
   (uint8_t  *)TRAN6pt7bBitmaps,
   (GFXglyph *)TRAN6pt7bGlyphs,
   0x41, 0x4D, 14 };
 
-class GSRWatchFaceLCD : public WatchyGSR {
+class GSRWatchFaceLCD : public WatchyGSR{
     public:
     GSRWatchFaceLCD() : WatchyGSR() { initAddOn(this); } // *** DO NOT EDIT THE CONTENTS OF THIS FUNCTION ***
 

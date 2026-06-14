@@ -1,6 +1,6 @@
 RTC_DATA_ATTR int MyBallsyFace;	// Watchface ID #.
 
-class GSRWatchFaceBallsy : public WatchyGSR {
+class GSRWatchFaceBallsy : public WatchyGSR{
     public:
     GSRWatchFaceBallsy() : WatchyGSR() { initAddOn(this); } // *** DO NOT EDIT THE CONTENTS OF THIS FUNCTION ***
 
