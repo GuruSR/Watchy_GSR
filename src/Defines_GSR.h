@@ -101,6 +101,9 @@
 #define GSR_MENU_INOPTIONS 3
 #define GSR_MENU_INTROUBLE 4
 
+// Button Delaying
+#define GSR_BUTTON_DEBOUNCE 480
+
 // Watchface Options
 #define GSR_AFW 1
 // Used to cancel any open WiFi when in use by that watch face at time of

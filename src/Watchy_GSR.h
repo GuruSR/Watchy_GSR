@@ -85,7 +85,7 @@ class WatchyGSR{
         //static dCh display;
         static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
         static SPIClass hspi;
-        static constexpr const char* Build = "1.4.8";
+        static constexpr const char* Build = "1.4.8.1";
         enum DesOps {dSTATIC, dLEFT, dRIGHT, dCENTER};
 
     public:
@@ -234,8 +234,6 @@ class WatchyGSR{
         virtual void drawWatchFace(); //override this method for different watch faces
         virtual void drawGame() final;
         virtual void drawOverlay(uint8_t StyleID) final;
-        static uint16_t Debounce();
-        static void setDebounce(bool pulse = false);
         virtual void SaveProgress();
         virtual void RegisterWatchFaces();
         virtual uint8_t AddWatchStyle(String StyleName) final;

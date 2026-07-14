@@ -156,7 +156,6 @@ RTC_DATA_ATTR int BasicWatchStyles;
 RTC_DATA_ATTR bool DefaultWatchStyles; // States that the original 2 Watch
                                        // Styles are to be added.
 RTC_DATA_ATTR float HWVer;
-RTC_DATA_ATTR volatile bool KeyIRQ; // Used to stop repeats.
 RTC_DATA_ATTR uint8_t GSR_MENU_PIN = 0;
 RTC_DATA_ATTR uint8_t GSR_BACK_PIN = 0;
 RTC_DATA_ATTR uint8_t GSR_UP_PIN = 0;
@@ -1491,6 +1490,7 @@ WatchyGSR::init (String datetime)
   Updates.Init = true;
   Updates.Tapped = false;
   LastButton = 0;
+  lastDispDraw = 0;
   Button = 0;
   Missed = 0;
   OTATry = 0;
@@ -2340,7 +2340,7 @@ WatchyGSR::handleButtonPress (uint8_t Pressed)
     return; // No buttons unless a tapped happened.
   if (!UpRight ())
     return; // Don't do buttons if not upright.
-  if (Pressed < 5 && LastButton > 0 && (millis () - LastButton) < Debounce ())
+  if (Pressed < 5 && LastButton > 0 && (millis () - LastButton) < GSR_BUTTON_DEBOUNCE)
     return;
   if (Darkness.Went && !Darkness.Woke)
     {
@@ -4242,7 +4242,7 @@ WatchyGSR::CheckButtons ()
   if (Options.SleepStyle == 4 && !Updates.Tapped)
     return; // Screen didn't permit buttons to work.
   if (!UpdateDisp && B
-      && (LastButton == 0 || (millis () - LastButton) > Debounce ())
+      && (LastButton == 0 || (millis () - LastButton) >= GSR_BUTTON_DEBOUNCE)
       && Missed == 0 && Button == 0)
     Button = B;
 }
@@ -4322,7 +4322,6 @@ WatchyGSR::showWatchFace ()
   UpdateDisp = false;
   Darkness.Went = false;
   Darkness.Last = millis ();
-  setDebounce (p);
 }
 void
 WatchyGSR::drawWatchFace ()
@@ -4379,16 +4378,6 @@ WatchyGSR::drawOverlay (uint8_t styleID)
     WatchStyles.AddOn[styleID]->InsertDrawOverlay (styleID);
   else
     InsertDrawOverlay (styleID);
-}
-uint16_t
-WatchyGSR::Debounce ()
-{
-  return lastDispDraw;
-}
-void
-WatchyGSR::setDebounce (bool pulse)
-{
-  lastDispDraw = millis () - LastButton + (pulse ? 125 : 165);
 }
 void
 WatchyGSR::SaveProgress ()
@@ -4972,7 +4961,7 @@ WatchyGSR::drawMenu ()
               + " ";
           S = ElapsedTimerState ();
           O = V + S;
-          Updates.Indexing.Offset = V.length () + 1;
+          Updates.Indexing.Offset = V.length ();
           Updates.Indexing.Width = S.length ();
           Updates.Indexing.Active = true;
         }
@@ -5516,7 +5505,6 @@ WatchyGSR::GoDark (bool DeepSleeping)
       Battery.DarkDirection = Battery.Direction;
       Battery.DarkState = Battery.State;
       display.display (true);
-      setDebounce ();
       Updates.Drawn = false;
       display.hibernate ();
       LastHelp = 0;
@@ -6198,7 +6186,7 @@ WatchyGSR::KeysCheck (void *parameter)
   while (KeysCheckOn)
     {
       Ok = !(Options.SleepStyle == 4 && !Updates.Tapped);
-      if (Ok && (LastButton == 0 || (millis () - LastButton) > Debounce ())
+      if (Ok && (LastButton == 0 || (millis () - LastButton) >= GSR_BUTTON_DEBOUNCE)
           && Missed == 0 && Button == 0)
         {
           B = WatchyGSR::getButtonPins ();
@@ -7732,7 +7720,6 @@ WatchyGSR::DisplayInit (bool ForceDark)
       display.display (false);
       display.fillScreen (GxEPD_BLACK);
       display.display (false);
-      setDebounce ();
     }
 }
 void
